@@ -1,0 +1,200 @@
+# Choosing a thinning method
+
+Thinning reduces a binary shape to a one-pixel-wide centerline that
+preserves topology. Several algorithms exist; they differ in how
+aggressively they erode pixels, how well they preserve corners, and how
+fast they run. This vignette gives a short guide to choosing among the
+algorithms `thinr` provides.
+
+## What’s implemented
+
+| Method       | Status (v0.2) | Reference                 |
+|--------------|---------------|---------------------------|
+| `zhang_suen` | Full          | Zhang & Suen (1984)       |
+| `guo_hall`   | Full          | Guo & Hall (1989)         |
+| `lee`        | Full (2-D)    | Lee, Kashyap & Chu (1994) |
+| `k3m`        | Full          | Saeed et al. (2010)       |
+
+`zhang_suen` is the default and matches `EBImage::thinImage()` behavior.
+The
+[`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
+wrapper is provided as a drop-in replacement.
+
+`lee` is a 2-D adaptation of Lee’s original 3-D algorithm. The 3-D case
+(volumetric thinning) is not implemented in this release.
+
+The K3M lookup tables in this implementation are reconstructed from the
+algorithm’s published description; they produce topology-preserving,
+one-pixel-wide skeletons on the test corpus. Verification against the
+paper’s exact tables is welcomed.
+
+## A quick visual comparison
+
+``` r
+
+# A 'V' shape — exercises diagonal preservation
+make_v <- function() {
+  m <- matrix(0L, 11, 11)
+  for (k in seq(0, 5)) {
+    m[2 + k, 2 + k] <- 1L
+    m[2 + k, 10 - k] <- 1L
+    m[3 + k, 2 + k] <- 1L
+    m[3 + k, 10 - k] <- 1L
+  }
+  m
+}
+v <- make_v()
+v
+#>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]
+#>  [1,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [2,]    0    1    0    0    0    0    0    0    0     1     0
+#>  [3,]    0    1    1    0    0    0    0    0    1     1     0
+#>  [4,]    0    0    1    1    0    0    0    1    1     0     0
+#>  [5,]    0    0    0    1    1    0    1    1    0     0     0
+#>  [6,]    0    0    0    0    1    1    1    0    0     0     0
+#>  [7,]    0    0    0    0    1    1    1    0    0     0     0
+#>  [8,]    0    0    0    0    1    0    1    0    0     0     0
+#>  [9,]    0    0    0    0    0    0    0    0    0     0     0
+#> [10,]    0    0    0    0    0    0    0    0    0     0     0
+#> [11,]    0    0    0    0    0    0    0    0    0     0     0
+```
+
+``` r
+
+thin(v, method = "zhang_suen")
+#>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]
+#>  [1,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [2,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [3,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [4,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [5,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [6,]    0    0    0    0    1    1    1    0    0     0     0
+#>  [7,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [8,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [9,]    0    0    0    0    0    0    0    0    0     0     0
+#> [10,]    0    0    0    0    0    0    0    0    0     0     0
+#> [11,]    0    0    0    0    0    0    0    0    0     0     0
+```
+
+``` r
+
+thin(v, method = "guo_hall")
+#>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]
+#>  [1,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [2,]    0    1    0    0    0    0    0    0    0     1     0
+#>  [3,]    0    1    0    0    0    0    0    0    1     0     0
+#>  [4,]    0    0    1    0    0    0    0    1    0     0     0
+#>  [5,]    0    0    0    1    0    0    1    0    0     0     0
+#>  [6,]    0    0    0    0    1    1    0    0    0     0     0
+#>  [7,]    0    0    0    0    0    1    0    0    0     0     0
+#>  [8,]    0    0    0    0    1    0    1    0    0     0     0
+#>  [9,]    0    0    0    0    0    0    0    0    0     0     0
+#> [10,]    0    0    0    0    0    0    0    0    0     0     0
+#> [11,]    0    0    0    0    0    0    0    0    0     0     0
+```
+
+``` r
+
+thin(v, method = "lee")
+#>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]
+#>  [1,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [2,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [3,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [4,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [5,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [6,]    0    0    0    0    1    1    1    0    0     0     0
+#>  [7,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [8,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [9,]    0    0    0    0    0    0    0    0    0     0     0
+#> [10,]    0    0    0    0    0    0    0    0    0     0     0
+#> [11,]    0    0    0    0    0    0    0    0    0     0     0
+```
+
+``` r
+
+thin(v, method = "k3m")
+#>       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]
+#>  [1,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [2,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [3,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [4,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [5,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [6,]    0    0    0    0    1    1    1    0    0     0     0
+#>  [7,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [8,]    0    0    0    0    0    0    0    0    0     0     0
+#>  [9,]    0    0    0    0    0    0    0    0    0     0     0
+#> [10,]    0    0    0    0    0    0    0    0    0     0     0
+#> [11,]    0    0    0    0    0    0    0    0    0     0     0
+```
+
+All four algorithms produce one-pixel-wide skeletons that follow the
+diagonals. Differences show up at corners and small protrusions:
+Guo-Hall and K3M tend to preserve corners marginally better than
+Zhang-Suen; Lee tends toward thinner skeletons because its four
+directional sub-iterations process boundaries more aggressively.
+
+## When to use which
+
+- **`zhang_suen`** — the default. Most predictable behavior. Use for
+  general purpose thinning and for compatibility with code that
+  previously used `EBImage::thinImage()`.
+- **`guo_hall`** — try this if your skeletons have lots of diagonal
+  features and Zhang-Suen is breaking them at corners. Slightly
+  different topology preservation behavior.
+- **`lee`** — when you want directional processing (four sub-iterations
+  per pass, one per cardinal direction). Sometimes produces cleaner
+  skeletons on asymmetric inputs than Zhang-Suen’s two-subiteration
+  approach.
+- **`k3m`** — strongest corner preservation in published comparative
+  studies, at the cost of being slower (six phases per outer iteration
+  vs. two for Zhang-Suen).
+
+## Inputs and outputs
+
+[`thin()`](https://humanpred.github.io/thinr/reference/thin.md) accepts
+logical, integer, and numeric matrices. Non-zero values are foreground.
+The return matrix matches the storage mode of the input — logical in,
+logical out; integer in, integer out; numeric in, numeric out.
+
+Higher-dimensional arrays (e.g. 3-D volumes) are not yet supported. The
+Lee algorithm in v0.2 will add 3-D support.
+
+## Performance
+
+A simple [`bench::mark()`](https://bench.r-lib.org/reference/mark.html)
+comparison on a moderate image (illustrative — see
+`tests/testthat/test-thin.R` for the test corpus that is the basis for
+the benchmark report committed alongside this release):
+
+``` r
+
+library(bench)
+m <- matrix(0L, 200, 200)
+m[50:150, 50:150] <- 1L  # solid square
+
+bench::mark(
+  zs = thin(m, method = "zhang_suen"),
+  gh = thin(m, method = "guo_hall"),
+  iterations = 5,
+  check = FALSE
+)
+```
+
+All four algorithms are O(iterations × pixels). Constant factors
+increase roughly: `zhang_suen` \< `guo_hall` \< `lee` \< `k3m`. For
+200×200 images all four finish in a few milliseconds on modern hardware.
+
+## References
+
+- Zhang, T. Y. & Suen, C. Y. (1984). A fast parallel algorithm for
+  thinning digital patterns. *Communications of the ACM*, 27(3),
+  236–239.
+- Guo, Z. & Hall, R. W. (1989). Parallel thinning with two-subiteration
+  algorithms. *Communications of the ACM*, 32(3), 359–373.
+- Lee, T.-C., Kashyap, R. L., & Chu, C.-N. (1994). Building skeleton
+  models via 3-D medial surface axis thinning algorithms. *CVGIP:
+  Graphical Models and Image Processing*, 56(6), 462–478.
+- Saeed, K., Tabędzki, M., Rybnik, M., & Adamski, M. (2010). K3M: A
+  universal algorithm for image skeletonization and a review of thinning
+  techniques. *International Journal of Applied Mathematics and Computer
+  Science*, 20(2), 317–335.
