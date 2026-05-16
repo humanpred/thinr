@@ -43,8 +43,9 @@ on which algorithm to pick for which kind of image.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/billdenney/thinr}
-  \item Report bugs at \url{https://github.com/billdenney/thinr/issues}
+  \item \url{https://github.com/humanpred/thinr}
+  \item \url{https://humanpred.github.io/thinr/}
+  \item Report bugs at \url{https://github.com/humanpred/thinr/issues}
 }
 
 }
