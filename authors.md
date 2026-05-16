@@ -2,7 +2,8 @@
 
 ## Authors
 
-- **Bill Denney**. Author, maintainer.  
+- **Bill Denney**. Author, maintainer.
+  [](https://orcid.org/0000-0002-5759-428X)  
   Human Predictions, LLC
 
 ## Citation
