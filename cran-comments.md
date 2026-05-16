@@ -1,6 +1,7 @@
 ## Submission
 
-This is a new release: thinr 0.1.0.
+This is thinr 0.2.0. Significant update over the (unreleased) 0.1.0
+prep: the Lee and K3M algorithms are now fully implemented.
 
 ## Test environments
 
@@ -25,4 +26,4 @@ None at first submission. Internal use is planned in the figureextract ecosystem
 ## Notes for the submission reviewer
 
 - `EBImage::thinImage()` provides a Zhang-Suen implementation; `thinr::thinImage()` is a signature-compatible drop-in. Mentioning `EBImage` in the description is informational; no `Imports` or `Suggests` link to it.
-- Two of the four algorithms named in the description (Lee, K3M) ship as stubs in v0.1.0 that error with an informative message; they will be replaced with full implementations in v0.2.0. This is documented in `NEWS.md` and the vignette.
+- The K3M lookup tables in `src/k3m.cpp` are reconstructed from the algorithm's published description in Saeed et al. (2010); the algorithm produces topology-preserving, one-pixel-wide skeletons on the included test corpus. Reviewers familiar with the original paper are welcome to flag any divergences from the exact published tables.

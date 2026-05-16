@@ -17,9 +17,10 @@ numeric inputs are all accepted. The image is treated as a 2-D
 matrix; arrays with more than two dimensions are not yet supported.}
 
 \item{method}{Algorithm to use. One of \code{"zhang_suen"} (default,
-matches \code{EBImage::thinImage}), \code{"guo_hall"}, \code{"lee"}, or \code{"k3m"}.
-Lee and K3M are stubs in v0.1 and error informatively; they ship in
-v0.2.}
+matches \code{EBImage::thinImage}), \code{"guo_hall"}, \code{"lee"} (2-D
+adaptation of Lee, Kashyap & Chu 1994), or \code{"k3m"} (Saeed et al.
+2010). See \code{vignette("choosing-a-method")} for guidance on which to
+pick.}
 
 \item{max_iter}{Maximum number of passes. Default 1000. Real binary
 images of typical sizes converge well under 50 passes; the limit is

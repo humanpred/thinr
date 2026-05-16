@@ -18,8 +18,10 @@ single dispatching function.
 matches the algorithm in \code{EBImage::thinImage}. Default.
 \item \code{\link[=thin]{guo_hall}} — Guo & Hall (1989). Often better corner
 preservation than Zhang-Suen on diagonal features.
-\item \code{lee} — Lee (1994), 3D-capable. Planned for v0.2.
-\item \code{k3m} — Saeed et al. (2010). Planned for v0.2.
+\item \code{\link[=thin]{lee}} — Lee, Kashyap & Chu (1994), 2-D adaptation. Four
+directional sub-iterations with crossing-number Euler-invariance.
+\item \code{\link[=thin]{k3m}} — Saeed et al. (2010). Six-phase lookup-table
+thinning; strong corner preservation.
 }
 }
 

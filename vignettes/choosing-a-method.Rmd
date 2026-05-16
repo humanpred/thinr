@@ -19,14 +19,18 @@ Thinning reduces a binary shape to a one-pixel-wide centerline that preserves to
 
 ## What's implemented
 
-| Method        | Status (v0.1)   | Reference |
+| Method        | Status (v0.2)   | Reference |
 |---------------|-----------------|-----------|
 | `zhang_suen`  | Full            | Zhang & Suen (1984) |
 | `guo_hall`    | Full            | Guo & Hall (1989) |
-| `lee`         | Stub; v0.2      | Lee (1994) |
-| `k3m`         | Stub; v0.2      | Saeed et al. (2010) |
+| `lee`         | Full (2-D)      | Lee, Kashyap & Chu (1994) |
+| `k3m`         | Full            | Saeed et al. (2010) |
 
 `zhang_suen` is the default and matches `EBImage::thinImage()` behavior. The `thinImage()` wrapper is provided as a drop-in replacement.
+
+`lee` is a 2-D adaptation of Lee's original 3-D algorithm. The 3-D case (volumetric thinning) is not implemented in this release.
+
+The K3M lookup tables in this implementation are reconstructed from the algorithm's published description; they produce topology-preserving, one-pixel-wide skeletons on the test corpus. Verification against the paper's exact tables is welcomed.
 
 ## A quick visual comparison
 
@@ -54,14 +58,22 @@ thin(v, method = "zhang_suen")
 thin(v, method = "guo_hall")
 ```
 
-Both algorithms produce one-pixel-wide skeletons that follow the diagonals; Guo-Hall tends to preserve corners marginally better on diagonal features.
+```{r}
+thin(v, method = "lee")
+```
+
+```{r}
+thin(v, method = "k3m")
+```
+
+All four algorithms produce one-pixel-wide skeletons that follow the diagonals. Differences show up at corners and small protrusions: Guo-Hall and K3M tend to preserve corners marginally better than Zhang-Suen; Lee tends toward thinner skeletons because its four directional sub-iterations process boundaries more aggressively.
 
 ## When to use which
 
 - **`zhang_suen`** — the default. Most predictable behavior. Use for general purpose thinning and for compatibility with code that previously used `EBImage::thinImage()`.
 - **`guo_hall`** — try this if your skeletons have lots of diagonal features and Zhang-Suen is breaking them at corners. Slightly different topology preservation behavior.
-- **`lee`** *(v0.2)* — best when your shapes have small holes or thin protrusions. Uses an Euler-invariance check that preserves topology more strictly.
-- **`k3m`** *(v0.2)* — best corner preservation in published comparative studies, at the cost of being slower.
+- **`lee`** — when you want directional processing (four sub-iterations per pass, one per cardinal direction). Sometimes produces cleaner skeletons on asymmetric inputs than Zhang-Suen's two-subiteration approach.
+- **`k3m`** — strongest corner preservation in published comparative studies, at the cost of being slower (six phases per outer iteration vs. two for Zhang-Suen).
 
 ## Inputs and outputs
 
@@ -86,7 +98,7 @@ bench::mark(
 )
 ```
 
-Both algorithms are O(iterations × pixels). The constant factor for `guo_hall` is slightly higher than `zhang_suen`. For 200×200 images, both finish in a few milliseconds on modern hardware.
+All four algorithms are O(iterations × pixels). Constant factors increase roughly: `zhang_suen` < `guo_hall` < `lee` < `k3m`. For 200×200 images all four finish in a few milliseconds on modern hardware.
 
 ## References
 

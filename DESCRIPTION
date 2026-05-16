@@ -1,16 +1,16 @@
 Package: thinr
 Title: Binary Image Thinning Algorithms
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person("Bill", "Denney", , "wdenney@humanpredictions.com",
            role = c("aut", "cre"),
            comment = c(affiliation = "Human Predictions, LLC"))
 Description: Thinning (skeletonization) algorithms for binary raster
-    images. Provides Zhang-Suen and Guo-Hall as fully implemented
-    algorithms (v0.1); Lee and K3M are planned for v0.2. The drop-in
-    'thinImage()' matches the signature of 'EBImage::thinImage()' so
-    existing code can switch parsers without changes. The wider 'thin()'
-    API selects the algorithm by name.
+    images. Provides four algorithms behind a single dispatching
+    function: Zhang-Suen, Guo-Hall, a 2-D adaptation of Lee, and K3M.
+    The drop-in 'thinImage()' matches the signature of
+    'EBImage::thinImage()' so existing code can switch parsers without
+    changes. The wider 'thin()' API selects the algorithm by name.
 License: LGPL-3
 Encoding: UTF-8
 Depends:

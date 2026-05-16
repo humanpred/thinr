@@ -11,8 +11,10 @@
 #'   matches the algorithm in `EBImage::thinImage`. Default.
 #' - [`guo_hall`][thin] — Guo & Hall (1989). Often better corner
 #'   preservation than Zhang-Suen on diagonal features.
-#' - `lee` — Lee (1994), 3D-capable. Planned for v0.2.
-#' - `k3m` — Saeed et al. (2010). Planned for v0.2.
+#' - [`lee`][thin] — Lee, Kashyap & Chu (1994), 2-D adaptation. Four
+#'   directional sub-iterations with crossing-number Euler-invariance.
+#' - [`k3m`][thin] — Saeed et al. (2010). Six-phase lookup-table
+#'   thinning; strong corner preservation.
 #'
 #' @section Drop-in compatibility:
 #'

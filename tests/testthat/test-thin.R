@@ -1,102 +1,145 @@
-describe("zhang_suen", {
-  it("produces a one-pixel-wide skeleton on a solid square", {
-    m <- matrix(0L, nrow = 9, ncol = 9)
-    m[3:7, 3:7] <- 1L
-    sk <- thin(m, method = "zhang_suen")
-    expect_lte(sum(sk), sum(m))
-    # The skeleton should be much thinner than the original.
-    expect_lt(sum(sk), sum(m) / 2)
-  })
+# Properties every thinning algorithm should satisfy on simple inputs.
+# Run for all four implemented methods.
 
-  it("preserves topology on a horizontal line", {
-    m <- matrix(0L, nrow = 5, ncol = 11)
-    m[2:4, 2:10] <- 1L
-    sk <- thin(m, method = "zhang_suen")
-    # All foreground pixels should be in one row after thinning.
-    rows_with_fg <- which(rowSums(sk) > 0)
-    expect_equal(length(rows_with_fg), 1L)
-  })
+methods <- c("zhang_suen", "guo_hall", "lee", "k3m")
 
-  it("is idempotent (thinning a skeleton produces the same skeleton)", {
-    m <- matrix(0L, nrow = 7, ncol = 11)
-    m[3:5, 3:9] <- 1L
-    once  <- thin(m,    method = "zhang_suen")
-    twice <- thin(once, method = "zhang_suen")
-    expect_equal(twice, once)
-  })
-
-  it("handles an all-background image without error", {
-    m <- matrix(0L, nrow = 5, ncol = 5)
-    expect_equal(thin(m, method = "zhang_suen"), m)
-  })
+describe("solid square thins to a much smaller skeleton", {
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 9, ncol = 9)
+        img[3:7, 3:7] <- 1L
+        sk <- thin(img, method = m)
+        expect_lte(sum(sk), sum(img))
+        expect_lt(sum(sk), sum(img) / 2)
+      })
+    })
+  }
 })
 
-describe("guo_hall", {
-  it("produces a one-pixel-wide skeleton on a solid square", {
-    m <- matrix(0L, nrow = 9, ncol = 9)
-    m[3:7, 3:7] <- 1L
-    sk <- thin(m, method = "guo_hall")
-    expect_lte(sum(sk), sum(m))
-    expect_lt(sum(sk), sum(m) / 2)
-  })
-
-  it("is idempotent", {
-    m <- matrix(0L, nrow = 7, ncol = 11)
-    m[3:5, 3:9] <- 1L
-    once  <- thin(m,    method = "guo_hall")
-    twice <- thin(once, method = "guo_hall")
-    expect_equal(twice, once)
-  })
-
-  it("handles an all-background image without error", {
-    m <- matrix(0L, nrow = 5, ncol = 5)
-    expect_equal(thin(m, method = "guo_hall"), m)
-  })
+describe("horizontal line collapses to a single row", {
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 5, ncol = 11)
+        img[2:4, 2:10] <- 1L
+        sk <- thin(img, method = m)
+        rows_with_fg <- which(rowSums(sk) > 0)
+        expect_equal(length(rows_with_fg), 1L,
+                     info = paste("method =", m,
+                                  "; rows with foreground =",
+                                  paste(rows_with_fg, collapse = ",")))
+      })
+    })
+  }
 })
 
-describe("lee and k3m stubs", {
-  it("error informatively for lee", {
-    m <- matrix(0L, nrow = 5, ncol = 5)
-    m[2:4, 2:4] <- 1L
-    expect_error(thin(m, method = "lee"), "not yet implemented in thinr v0.1")
-  })
-
-  it("error informatively for k3m", {
-    m <- matrix(0L, nrow = 5, ncol = 5)
-    m[2:4, 2:4] <- 1L
-    expect_error(thin(m, method = "k3m"), "not yet implemented in thinr v0.1")
-  })
+describe("thinning is idempotent", {
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 7, ncol = 11)
+        img[3:5, 3:9] <- 1L
+        once  <- thin(img,  method = m)
+        twice <- thin(once, method = m)
+        expect_equal(twice, once)
+      })
+    })
+  }
 })
 
-describe("thinImage drop-in", {
-  it("matches thin(method = 'zhang_suen')", {
-    m <- matrix(0L, nrow = 9, ncol = 9)
-    m[3:7, 3:7] <- 1L
-    expect_equal(thinImage(m), thin(m, method = "zhang_suen"))
+describe("all-background image is unchanged", {
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 5, ncol = 5)
+        expect_equal(thin(img, method = m), img)
+      })
+    })
+  }
+})
+
+describe("a single isolated foreground pixel is preserved (endpoint)", {
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 5, ncol = 5)
+        img[3, 3] <- 1L
+        expect_equal(thin(img, method = m), img)
+      })
+    })
+  }
+})
+
+describe("topology is preserved on a small ring (hole stays a hole)", {
+  count_holes_present <- function(img) {
+    visited <- matrix(FALSE, nrow = nrow(img), ncol = ncol(img))
+    queue <- list(c(1L, 1L))
+    while (length(queue) > 0) {
+      pt <- queue[[1]]
+      queue <- queue[-1]
+      r <- pt[1]
+      c <- pt[2]
+      if (r < 1 || r > nrow(img) || c < 1 || c > ncol(img)) next
+      if (visited[r, c]) next
+      if (img[r, c] != 0) next
+      visited[r, c] <- TRUE
+      queue <- c(queue,
+                 list(c(r - 1L, c), c(r + 1L, c), c(r, c - 1L), c(r, c + 1L)))
+    }
+    any(img == 0 & !visited)
+  }
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 11, ncol = 11)
+        img[2:10, 2:10] <- 1L
+        img[5:7,  5:7]  <- 0L
+        expect_true(count_holes_present(img), info = "starting image has a hole")
+        sk <- thin(img, method = m)
+        expect_true(count_holes_present(sk),
+                    info = paste("thinned image (method =", m,
+                                 ") should still have a hole"))
+      })
+    })
+  }
+})
+
+describe("thinImage matches thin(method = 'zhang_suen')", {
+  it("on a solid square", {
+    img <- matrix(0L, nrow = 9, ncol = 9)
+    img[3:7, 3:7] <- 1L
+    expect_equal(thinImage(img), thin(img, method = "zhang_suen"))
   })
 })
 
 describe("input coercion", {
   it("accepts a logical matrix and returns a logical matrix", {
-    m <- matrix(FALSE, nrow = 5, ncol = 5)
-    m[2:4, 2:4] <- TRUE
-    sk <- thin(m, method = "zhang_suen")
+    img <- matrix(FALSE, nrow = 5, ncol = 5)
+    img[2:4, 2:4] <- TRUE
+    sk <- thin(img, method = "zhang_suen")
     expect_type(sk, "logical")
-    expect_equal(dim(sk), dim(m))
+    expect_equal(dim(sk), dim(img))
   })
 
   it("accepts a numeric matrix and returns a numeric matrix", {
-    m <- matrix(0, nrow = 5, ncol = 5)
-    m[2:4, 2:4] <- 1
-    sk <- thin(m, method = "zhang_suen")
+    img <- matrix(0, nrow = 5, ncol = 5)
+    img[2:4, 2:4] <- 1
+    sk <- thin(img, method = "zhang_suen")
     expect_type(sk, "double")
-    expect_equal(dim(sk), dim(m))
+    expect_equal(dim(sk), dim(img))
   })
 
   it("treats non-zero numeric values as foreground", {
-    m <- matrix(0, nrow = 5, ncol = 5)
-    m[2:4, 2:4] <- 0.7
-    sk <- thin(m, method = "zhang_suen")
+    img <- matrix(0, nrow = 5, ncol = 5)
+    img[2:4, 2:4] <- 0.7
+    sk <- thin(img, method = "zhang_suen")
     expect_gt(sum(sk), 0)
   })
 })

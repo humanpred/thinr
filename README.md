@@ -37,12 +37,12 @@ thinImage(m)
 
 ## Algorithms
 
-| Method        | Status (v0.1)   | Notes |
+| Method        | Status (v0.2)   | Notes |
 |---------------|-----------------|-------|
 | `zhang_suen`  | Full            | Default; matches `EBImage::thinImage()`. |
 | `guo_hall`    | Full            | Slightly better diagonal-corner preservation. |
-| `lee`         | Stub; v0.2      | 3-D capable; Euler-invariance check. |
-| `k3m`         | Stub; v0.2      | Strong corner preservation. |
+| `lee`         | Full (2-D)      | Four directional sub-iterations; crossing-number Euler-invariance. |
+| `k3m`         | Full            | Six-phase lookup-table thinning; strongest corner preservation. |
 
 See `vignette("choosing-a-method")` for guidance.
 

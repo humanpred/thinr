@@ -8,9 +8,10 @@
 #'   numeric inputs are all accepted. The image is treated as a 2-D
 #'   matrix; arrays with more than two dimensions are not yet supported.
 #' @param method Algorithm to use. One of `"zhang_suen"` (default,
-#'   matches `EBImage::thinImage`), `"guo_hall"`, `"lee"`, or `"k3m"`.
-#'   Lee and K3M are stubs in v0.1 and error informatively; they ship in
-#'   v0.2.
+#'   matches `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D
+#'   adaptation of Lee, Kashyap & Chu 1994), or `"k3m"` (Saeed et al.
+#'   2010). See `vignette("choosing-a-method")` for guidance on which to
+#'   pick.
 #' @param max_iter Maximum number of passes. Default 1000. Real binary
 #'   images of typical sizes converge well under 50 passes; the limit is
 #'   a safety bound against pathological inputs.
