@@ -1,0 +1,35 @@
+Package: thinr
+Title: Binary Image Thinning Algorithms
+Version: 0.1.0
+Authors@R:
+    person("Bill", "Denney", , "wdenney@humanpredictions.com",
+           role = c("aut", "cre"),
+           comment = c(affiliation = "Human Predictions, LLC"))
+Description: Thinning (skeletonization) algorithms for binary raster
+    images. Provides Zhang-Suen and Guo-Hall as fully implemented
+    algorithms (v0.1); Lee and K3M are planned for v0.2. The drop-in
+    'thinImage()' matches the signature of 'EBImage::thinImage()' so
+    existing code can switch parsers without changes. The wider 'thin()'
+    API selects the algorithm by name.
+License: LGPL-3
+Encoding: UTF-8
+Depends:
+    R (>= 4.2)
+LinkingTo:
+    Rcpp
+Imports:
+    Rcpp
+Suggests:
+    bench,
+    covr,
+    knitr,
+    lintr,
+    rmarkdown,
+    styler,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+URL: https://github.com/billdenney/thinr
+BugReports: https://github.com/billdenney/thinr/issues

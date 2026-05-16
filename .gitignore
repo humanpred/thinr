@@ -1,0 +1,33 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tar.gz
+*.tgz
+/*.Rcheck/
+
+# Compiled
+src/*.o
+src/*.so
+src/*.dll
+src/symbols.rds
+
+# pkgdown
+docs/
+
+# coverage
+/inst/doc/
+
+# Editors
+.vscode/
+.idea/
+
+# Claude Code per-machine state
+.claude/
+/doc/
+/Meta/

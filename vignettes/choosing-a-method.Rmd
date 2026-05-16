@@ -1,0 +1,96 @@
+---
+title: "Choosing a thinning method"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Choosing a thinning method}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(thinr)
+```
+
+Thinning reduces a binary shape to a one-pixel-wide centerline that preserves topology. Several algorithms exist; they differ in how aggressively they erode pixels, how well they preserve corners, and how fast they run. This vignette gives a short guide to choosing among the algorithms `thinr` provides.
+
+## What's implemented
+
+| Method        | Status (v0.1)   | Reference |
+|---------------|-----------------|-----------|
+| `zhang_suen`  | Full            | Zhang & Suen (1984) |
+| `guo_hall`    | Full            | Guo & Hall (1989) |
+| `lee`         | Stub; v0.2      | Lee (1994) |
+| `k3m`         | Stub; v0.2      | Saeed et al. (2010) |
+
+`zhang_suen` is the default and matches `EBImage::thinImage()` behavior. The `thinImage()` wrapper is provided as a drop-in replacement.
+
+## A quick visual comparison
+
+```{r}
+# A 'V' shape — exercises diagonal preservation
+make_v <- function() {
+  m <- matrix(0L, 11, 11)
+  for (k in seq(0, 5)) {
+    m[2 + k, 2 + k] <- 1L
+    m[2 + k, 10 - k] <- 1L
+    m[3 + k, 2 + k] <- 1L
+    m[3 + k, 10 - k] <- 1L
+  }
+  m
+}
+v <- make_v()
+v
+```
+
+```{r}
+thin(v, method = "zhang_suen")
+```
+
+```{r}
+thin(v, method = "guo_hall")
+```
+
+Both algorithms produce one-pixel-wide skeletons that follow the diagonals; Guo-Hall tends to preserve corners marginally better on diagonal features.
+
+## When to use which
+
+- **`zhang_suen`** — the default. Most predictable behavior. Use for general purpose thinning and for compatibility with code that previously used `EBImage::thinImage()`.
+- **`guo_hall`** — try this if your skeletons have lots of diagonal features and Zhang-Suen is breaking them at corners. Slightly different topology preservation behavior.
+- **`lee`** *(v0.2)* — best when your shapes have small holes or thin protrusions. Uses an Euler-invariance check that preserves topology more strictly.
+- **`k3m`** *(v0.2)* — best corner preservation in published comparative studies, at the cost of being slower.
+
+## Inputs and outputs
+
+`thin()` accepts logical, integer, and numeric matrices. Non-zero values are foreground. The return matrix matches the storage mode of the input — logical in, logical out; integer in, integer out; numeric in, numeric out.
+
+Higher-dimensional arrays (e.g. 3-D volumes) are not yet supported. The Lee algorithm in v0.2 will add 3-D support.
+
+## Performance
+
+A simple `bench::mark()` comparison on a moderate image (illustrative — see `tests/testthat/test-thin.R` for the test corpus that is the basis for the benchmark report committed alongside this release):
+
+```{r eval = FALSE}
+library(bench)
+m <- matrix(0L, 200, 200)
+m[50:150, 50:150] <- 1L  # solid square
+
+bench::mark(
+  zs = thin(m, method = "zhang_suen"),
+  gh = thin(m, method = "guo_hall"),
+  iterations = 5,
+  check = FALSE
+)
+```
+
+Both algorithms are O(iterations × pixels). The constant factor for `guo_hall` is slightly higher than `zhang_suen`. For 200×200 images, both finish in a few milliseconds on modern hardware.
+
+## References
+
+- Zhang, T. Y. & Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. *Communications of the ACM*, 27(3), 236–239.
+- Guo, Z. & Hall, R. W. (1989). Parallel thinning with two-subiteration algorithms. *Communications of the ACM*, 32(3), 359–373.
+- Lee, T.-C., Kashyap, R. L., & Chu, C.-N. (1994). Building skeleton models via 3-D medial surface axis thinning algorithms. *CVGIP: Graphical Models and Image Processing*, 56(6), 462–478.
+- Saeed, K., Tabędzki, M., Rybnik, M., & Adamski, M. (2010). K3M: A universal algorithm for image skeletonization and a review of thinning techniques. *International Journal of Applied Mathematics and Computer Science*, 20(2), 317–335.
