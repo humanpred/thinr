@@ -4,7 +4,8 @@ Version: 0.2.0
 Authors@R:
     person("Bill", "Denney", , "wdenney@humanpredictions.com",
            role = c("aut", "cre"),
-           comment = c(affiliation = "Human Predictions, LLC"))
+           comment = c(ORCID = "0000-0002-5759-428X",
+                       affiliation = "Human Predictions, LLC"))
 Description: Thinning (skeletonization) algorithms for binary raster
     images. Provides four algorithms behind a single dispatching
     function: Zhang-Suen, Guo-Hall, a 2-D adaptation of Lee, and K3M.
