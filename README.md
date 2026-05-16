@@ -1,7 +1,10 @@
 # thinr
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/billdenney/thinr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/billdenney/thinr/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/humanpred/thinr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/humanpred/thinr/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/humanpred/thinr/graph/badge.svg)](https://app.codecov.io/gh/humanpred/thinr)
+[![pkgdown](https://github.com/humanpred/thinr/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/humanpred/thinr/actions/workflows/pkgdown.yaml)
+[![lint](https://github.com/humanpred/thinr/actions/workflows/lint.yaml/badge.svg)](https://github.com/humanpred/thinr/actions/workflows/lint.yaml)
 <!-- badges: end -->
 
 Binary image thinning (skeletonization) algorithms for R. Designed as a drop-in replacement for `EBImage::thinImage()` with additional algorithms behind a single dispatching function.
@@ -14,7 +17,7 @@ Binary image thinning (skeletonization) algorithms for R. Designed as a drop-in 
 
 # From GitHub:
 # install.packages("remotes")
-remotes::install_github("billdenney/thinr")
+remotes::install_github("humanpred/thinr")
 ```
 
 ## Usage
