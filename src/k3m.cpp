@@ -1,113 +1,118 @@
-// Saeed, Tabedzki, Rybnik & Adamski (2010) - "K3M: A universal algorithm
-// for image skeletonization and a review of thinning techniques".
+// Saeed, Tabedzki, Rybnik & Adamski (2010) - "K3M: A universal
+// algorithm for image skeletonization and a review of thinning
+// techniques", Int. J. Appl. Math. Comput. Sci. 20(2):317-335.
+// doi:10.2478/v10006-010-0024-4
 //
-// K3M is a six-phase iterative algorithm. Each phase removes "border
-// pixels" (pixels with at least one 4-connected background neighbour)
-// whose 8-neighbour pattern matches a lookup table for that phase. The
-// tables go from strict in phase 1 (only 2-adjacent-neighbour patterns)
-// to permissive in phase 5 (6-adjacent-neighbour patterns), with a final
-// phase 0 sweep using the strictest table for cleanup. Inside each
-// outer iteration, all six phases run before the next iteration starts.
+// Sequential (scanline-type) iterative thinning. Each iteration:
 //
-// Neighbour weight encoding (8-bit pattern; bit set when neighbour is
-// foreground). Starting from north and going clockwise:
+//   Phase 0  Scan all foreground pixels; mark as "border" any pixel
+//            whose 8-neighbour weight w(x,y) is in lookup table A_0.
+//   Phase 1  Scan border pixels in raster order; delete any whose
+//            current w(x,y) is in A_1.
+//   Phase 2  Same, with A_2.
+//   Phase 3  Same, with A_3.
+//   Phase 4  Same, with A_4.
+//   Phase 5  Same, with A_5.
+//   Phase 6  Unmark remaining borders (implicit - the next iteration
+//            re-runs Phase 0 from scratch).
 //
-//   bit 0 (=1)   = p2  (north)
-//   bit 1 (=2)   = p3  (NE)
-//   bit 2 (=4)   = p4  (east)
-//   bit 3 (=8)   = p5  (SE)
-//   bit 4 (=16)  = p6  (south)
-//   bit 5 (=32)  = p7  (SW)
-//   bit 6 (=64)  = p8  (west)
-//   bit 7 (=128) = p9  (NW)
+// Iterate until phases 1..5 make no modifications. Then run a final
+// "one-pixel-width" pass that scans all foreground pixels and deletes
+// any whose w(x,y) is in lookup table A_1pix.
 //
-// Border pixel: pixel with at least one of p2, p4, p6, p8 equal to 0
-// (a 4-connected background neighbour).
+// Neighbour weight w(x,y) follows the paper's matrix N (Eq. 3, p. 326):
 //
-// Lookup tables A1..A5 contain the 8 rotations of each base pattern.
-// Each phase i uses the cumulative table {A1, ..., A_i}. The implementation
-// expands every cumulative phase table into a 256-entry boolean array at
-// file scope so the inner loop is a single array lookup.
+//     128   1   2
+//      64       4
+//      32  16   8
 //
-// Implementation note: the K3M paper's published tables A1..A5 are
-// reconstructed here from the algorithm's published description. The
-// algorithm produces topology-preserving, one-pixel-wide skeletons on
-// the test corpus (see tests/testthat/test-thin.R). Reviewers familiar
-// with the paper are invited to verify table contents against the
-// original publication; corrections welcome.
+// In thinr's 8-neighbour labelling (p2 = N, going clockwise):
+//
+//     p9=NW (128)   p2=N (1)    p3=NE (2)
+//     p8=W   (64)               p4=E   (4)
+//     p7=SW  (32)   p6=S (16)   p5=SE  (8)
+//
+// The lookup arrays A_0..A_5 and A_1pix are reproduced verbatim from
+// Saeed et al. (2010), Section 3.3 ("Components of neighbourhood
+// lookup arrays", p. 327).
 
 #include <Rcpp.h>
 using namespace Rcpp;
 
 namespace {
 
-// A1: two adjacent foreground neighbours (8 rotations of NW-N pair).
-const int A1[] = {3, 6, 12, 24, 48, 96, 192, 129};
+// A_0: border-marking lookup. 48 patterns. Section 3.3, p. 327.
+const int A_0_DATA[] = {
+    3,   6,   7,  12,  14,  15,  24,  28,  30,  31,
+   48,  56,  60,  62,  63,  96, 112, 120, 124, 126,
+  127, 129, 131, 135, 143, 159, 191, 192, 193, 195,
+  199, 207, 223, 224, 225, 227, 231, 239, 240, 241,
+  243, 247, 248, 249, 251, 252, 253, 254
+};
 
-// A2: three adjacent foreground neighbours.
-const int A2[] = {7, 14, 28, 56, 112, 224, 193, 131};
+// A_1: 8 patterns. Phase 1 deletion lookup.
+const int A_1_DATA[] = {7, 14, 28, 56, 112, 131, 193, 224};
 
-// A3: four-pixel patterns where the four neighbours form a contiguous arc.
-const int A3[] = {15, 30, 60, 120, 240, 225, 195, 135};
+// A_2: 16 patterns. Phase 2 deletion lookup (cumulative; A_1 in A_2).
+const int A_2_DATA[] = {
+    7,  14,  15,  28,  30,  56,  60, 112, 120, 131,
+  135, 193, 195, 224, 225, 240
+};
 
-// A4: five-pixel arcs.
-const int A4[] = {31, 62, 124, 248, 241, 227, 199, 143};
+// A_3: 24 patterns. Phase 3 deletion lookup (A_2 in A_3).
+const int A_3_DATA[] = {
+    7,  14,  15,  28,  30,  31,  56,  60,  62, 112,
+  120, 124, 131, 135, 143, 193, 195, 199, 224, 225,
+  227, 240, 241, 248
+};
 
-// A5: six-pixel arcs.
-const int A5[] = {63, 126, 252, 249, 243, 231, 207, 159};
+// A_4: 32 patterns. Phase 4 deletion lookup (A_3 in A_4).
+const int A_4_DATA[] = {
+    7,  14,  15,  28,  30,  31,  56,  60,  62,  63,
+  112, 120, 124, 126, 131, 135, 143, 159, 193, 195,
+  199, 207, 224, 225, 227, 231, 240, 241, 243, 248,
+  249, 252
+};
 
-struct PhaseTables {
-  bool t[6][256];
-  PhaseTables() {
-    for (int phase = 0; phase < 6; phase++) {
-      for (int v = 0; v < 256; v++) t[phase][v] = false;
+// A_5: 38 patterns. Phase 5 deletion lookup (A_4 in A_5).
+const int A_5_DATA[] = {
+    7,  14,  15,  28,  30,  31,  56,  60,  62,  63,
+  112, 120, 124, 126, 131, 135, 143, 159, 191, 193,
+  195, 199, 207, 224, 225, 227, 231, 239, 240, 241,
+  243, 247, 248, 249, 251, 252, 253, 254
+};
+
+// A_1pix: one-pixel-width thinning lookup. Identical to A_0 in the
+// published table. 48 patterns.
+const int A_1PIX_DATA[] = {
+    3,   6,   7,  12,  14,  15,  24,  28,  30,  31,
+   48,  56,  60,  62,  63,  96, 112, 120, 124, 126,
+  127, 129, 131, 135, 143, 159, 191, 192, 193, 195,
+  199, 207, 223, 224, 225, 227, 231, 239, 240, 241,
+  243, 247, 248, 249, 251, 252, 253, 254
+};
+
+struct K3MTables {
+  bool a0[256];
+  bool a[6][256];      // indexed 1..5; a[0] unused
+  bool a1pix[256];
+  K3MTables() {
+    for (int v = 0; v < 256; v++) {
+      a0[v] = false;
+      a1pix[v] = false;
+      for (int p = 0; p < 6; p++) a[p][v] = false;
     }
-    // Phase 0 (final cleanup): A1 only.
-    for (size_t i = 0; i < sizeof(A1) / sizeof(int); i++) t[0][A1[i]] = true;
-    // Phase 1: A1.
-    for (size_t i = 0; i < sizeof(A1) / sizeof(int); i++) t[1][A1[i]] = true;
-    // Phase 2: A1 + A2.
-    for (size_t i = 0; i < sizeof(A1) / sizeof(int); i++) t[2][A1[i]] = true;
-    for (size_t i = 0; i < sizeof(A2) / sizeof(int); i++) t[2][A2[i]] = true;
-    // Phase 3: A1 + A2 + A3.
-    for (size_t i = 0; i < sizeof(A1) / sizeof(int); i++) t[3][A1[i]] = true;
-    for (size_t i = 0; i < sizeof(A2) / sizeof(int); i++) t[3][A2[i]] = true;
-    for (size_t i = 0; i < sizeof(A3) / sizeof(int); i++) t[3][A3[i]] = true;
-    // Phase 4: A1..A4.
-    for (size_t i = 0; i < sizeof(A1) / sizeof(int); i++) t[4][A1[i]] = true;
-    for (size_t i = 0; i < sizeof(A2) / sizeof(int); i++) t[4][A2[i]] = true;
-    for (size_t i = 0; i < sizeof(A3) / sizeof(int); i++) t[4][A3[i]] = true;
-    for (size_t i = 0; i < sizeof(A4) / sizeof(int); i++) t[4][A4[i]] = true;
-    // Phase 5: A1..A5.
-    for (size_t i = 0; i < sizeof(A1) / sizeof(int); i++) t[5][A1[i]] = true;
-    for (size_t i = 0; i < sizeof(A2) / sizeof(int); i++) t[5][A2[i]] = true;
-    for (size_t i = 0; i < sizeof(A3) / sizeof(int); i++) t[5][A3[i]] = true;
-    for (size_t i = 0; i < sizeof(A4) / sizeof(int); i++) t[5][A4[i]] = true;
-    for (size_t i = 0; i < sizeof(A5) / sizeof(int); i++) t[5][A5[i]] = true;
+    for (size_t i = 0; i < sizeof(A_0_DATA)    / sizeof(int); i++) a0[A_0_DATA[i]] = true;
+    for (size_t i = 0; i < sizeof(A_1_DATA)    / sizeof(int); i++) a[1][A_1_DATA[i]] = true;
+    for (size_t i = 0; i < sizeof(A_2_DATA)    / sizeof(int); i++) a[2][A_2_DATA[i]] = true;
+    for (size_t i = 0; i < sizeof(A_3_DATA)    / sizeof(int); i++) a[3][A_3_DATA[i]] = true;
+    for (size_t i = 0; i < sizeof(A_4_DATA)    / sizeof(int); i++) a[4][A_4_DATA[i]] = true;
+    for (size_t i = 0; i < sizeof(A_5_DATA)    / sizeof(int); i++) a[5][A_5_DATA[i]] = true;
+    for (size_t i = 0; i < sizeof(A_1PIX_DATA) / sizeof(int); i++) a1pix[A_1PIX_DATA[i]] = true;
   }
 };
 
-const PhaseTables PHASE = PhaseTables();
-
-inline int neighbour_weight(int p2, int p3, int p4, int p5,
-                            int p6, int p7, int p8, int p9) {
-  return p2 + (p3 << 1) + (p4 << 2) + (p5 << 3)
-       + (p6 << 4) + (p7 << 5) + (p8 << 6) + (p9 << 7);
-}
-
-inline int is_border_pixel(int p2, int p4, int p6, int p8) {
-  // At least one 4-connected background neighbour.
-  return (p2 == 0) || (p4 == 0) || (p6 == 0) || (p8 == 0);
-}
-
-// Crossing number for endpoint / topology guard.
-inline int crossing_number(int p2, int p3, int p4, int p5,
-                           int p6, int p7, int p8, int p9) {
-  return (p2 == 0 && p3 == 1) + (p3 == 0 && p4 == 1)
-       + (p4 == 0 && p5 == 1) + (p5 == 0 && p6 == 1)
-       + (p6 == 0 && p7 == 1) + (p7 == 0 && p8 == 1)
-       + (p8 == 0 && p9 == 1) + (p9 == 0 && p2 == 1);
-}
+const K3MTables TBL = K3MTables();
 
 }  // namespace
 
@@ -116,83 +121,74 @@ IntegerMatrix k3m_cpp(IntegerMatrix img, int max_iter) {
   int nrow = img.nrow();
   int ncol = img.ncol();
   IntegerMatrix m = clone(img);
-  IntegerMatrix mark(nrow, ncol);
+  IntegerMatrix border_mask(nrow, ncol);
 
+  // Compute the paper's neighbour weight w(x,y) at (r, c) from the
+  // current state of m.
+  auto get_weight = [&](int r, int c) -> int {
+    int p2 = m(r - 1, c);
+    int p3 = m(r - 1, c + 1);
+    int p4 = m(r,     c + 1);
+    int p5 = m(r + 1, c + 1);
+    int p6 = m(r + 1, c);
+    int p7 = m(r + 1, c - 1);
+    int p8 = m(r,     c - 1);
+    int p9 = m(r - 1, c - 1);
+    return p2 * 1 + p3 * 2 + p4 * 4 + p5 * 8
+         + p6 * 16 + p7 * 32 + p8 * 64 + p9 * 128;
+  };
+
+  // Phases 0..6, iterated.
   for (int it = 0; it < max_iter; it++) {
-    bool changed = false;
+    bool modified = false;
 
-    // Phases 1..5: progressively permissive removal of border pixels.
-    for (int phase = 1; phase <= 5; phase++) {
-      std::fill(mark.begin(), mark.end(), 0);
-
-      for (int r = 1; r < nrow - 1; r++) {
-        for (int c = 1; c < ncol - 1; c++) {
-          if (m(r, c) != 1) continue;
-          int p2 = m(r - 1, c);
-          int p3 = m(r - 1, c + 1);
-          int p4 = m(r,     c + 1);
-          int p5 = m(r + 1, c + 1);
-          int p6 = m(r + 1, c);
-          int p7 = m(r + 1, c - 1);
-          int p8 = m(r,     c - 1);
-          int p9 = m(r - 1, c - 1);
-
-          if (!is_border_pixel(p2, p4, p6, p8)) continue;
-
-          // Endpoint guard: preserve curve endpoints and isolated pixels.
-          int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-          if (B < 2) continue;
-
-          // Topology guard: removing a pixel with crossing number != 1
-          // would change connectivity.
-          if (crossing_number(p2, p3, p4, p5, p6, p7, p8, p9) != 1) continue;
-
-          int w = neighbour_weight(p2, p3, p4, p5, p6, p7, p8, p9);
-          if (PHASE.t[phase][w]) {
-            mark(r, c) = 1;
-          }
-        }
-      }
-
-      for (int i = 0; i < nrow * ncol; i++) {
-        if (mark[i]) {
-          m[i] = 0;
-          changed = true;
-        }
-      }
-    }
-
-    // Phase 0 cleanup sweep (table A1 only).
-    std::fill(mark.begin(), mark.end(), 0);
+    // Phase 0: mark borders.
+    std::fill(border_mask.begin(), border_mask.end(), 0);
     for (int r = 1; r < nrow - 1; r++) {
       for (int c = 1; c < ncol - 1; c++) {
         if (m(r, c) != 1) continue;
-        int p2 = m(r - 1, c);
-        int p3 = m(r - 1, c + 1);
-        int p4 = m(r,     c + 1);
-        int p5 = m(r + 1, c + 1);
-        int p6 = m(r + 1, c);
-        int p7 = m(r + 1, c - 1);
-        int p8 = m(r,     c - 1);
-        int p9 = m(r - 1, c - 1);
-        if (!is_border_pixel(p2, p4, p6, p8)) continue;
-        int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-        if (B < 2) continue;
-        if (crossing_number(p2, p3, p4, p5, p6, p7, p8, p9) != 1) continue;
-        int w = neighbour_weight(p2, p3, p4, p5, p6, p7, p8, p9);
-        if (PHASE.t[0][w]) {
-          mark(r, c) = 1;
-        }
-      }
-    }
-    for (int i = 0; i < nrow * ncol; i++) {
-      if (mark[i]) {
-        m[i] = 0;
-        changed = true;
+        if (TBL.a0[get_weight(r, c)]) border_mask(r, c) = 1;
       }
     }
 
-    if (!changed) break;
+    // Phases 1..5: sequential deletion of border pixels matching A_i.
+    // The weight is recomputed against the current state at each
+    // visit, so deletions earlier in the scan influence later
+    // neighbour weights (this is the sequential character of the
+    // algorithm, per Fig. 19 and Section 3 of the paper).
+    for (int phase = 1; phase <= 5; phase++) {
+      for (int r = 1; r < nrow - 1; r++) {
+        for (int c = 1; c < ncol - 1; c++) {
+          if (!border_mask(r, c)) continue;
+          if (m(r, c) != 1) continue;
+          if (TBL.a[phase][get_weight(r, c)]) {
+            m(r, c) = 0;
+            modified = true;
+          }
+        }
+      }
+    }
+
+    // Phase 6 (unmark borders): implicit; next iteration's Phase 0
+    // recomputes border_mask from scratch.
+    if (!modified) break;
+  }
+
+  // Thinning to a one-pixel width skeleton (Section 3, p. 326).
+  // Uses lookup table A_1pix; applied iteratively until no further
+  // pixels can be deleted.
+  for (int it = 0; it < max_iter; it++) {
+    bool modified = false;
+    for (int r = 1; r < nrow - 1; r++) {
+      for (int c = 1; c < ncol - 1; c++) {
+        if (m(r, c) != 1) continue;
+        if (TBL.a1pix[get_weight(r, c)]) {
+          m(r, c) = 0;
+          modified = true;
+        }
+      }
+    }
+    if (!modified) break;
   }
 
   return m;
