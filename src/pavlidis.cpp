@@ -1,18 +1,28 @@
-// Pavlidis (1980), "A thinning algorithm for discrete binary images",
-// Computer Graphics and Image Processing 13(2):142-157.
+// Restrictive 4-directional thinning, retained under the name
+// "pavlidis" for compatibility with how the algorithm is commonly
+// cited.
 //
-// Four directional sub-iterations like Lee 2D, but with **tighter
-// preservation of interior pixels**: a pixel is required to have a
-// 4-connected background neighbour on the sub-iteration's side AND a
-// neighbour count B(P) in [2, 5] (rather than [2, 6]). The B <= 5
-// upper bound is what gives Pavlidis its characteristic preservation
-// of pixels that sit in the middle of dense regions; Lee, with B <= 6,
-// would erode them. Endpoint and crossing-number checks are unchanged.
+// Important: this implementation **does not match** Pavlidis's
+// original (1980) "A thinning algorithm for discrete binary images",
+// CGIP 13(2):142-157. The 1980 paper presents a *contour-following*
+// thinning algorithm with multi-pixel detection masks (see Lam, Lee
+// & Suen 1992 survey, pages 873-875, reference [86]). What is
+// implemented here is a different beast: a Lee-2D-style parallel
+// thinning with a tighter `B(P) in [2, 5]` neighbour-count bound,
+// not the contour-traced multi-pixel approach of the actual paper.
 //
-// Implementation note: the [2, 5] bound is one of several
-// Pavlidis-family rule sets reported in the survey literature.
-// Reviewers familiar with the original publication are invited to
-// confirm the exact constant.
+// The faithful Pavlidis contour-following implementation is on the
+// thinr roadmap for a later release. For now, this algorithm is
+// shipped under the same name because the package's existing users
+// reach for `thin(method = "pavlidis")` to get the restrictive
+// behaviour described below.
+//
+// Algorithm:
+//   Four directional sub-iterations like Lee 2D, but a pixel needs
+//   B(P) in [2, 5] (Lee uses [2, 6]). The lower upper-bound preserves
+//   pixels with 6 or more foreground neighbours, which Lee would
+//   erode. Crossing-number topology check (A(P) = 1) is the same as
+//   Lee.
 
 #include <Rcpp.h>
 #include "thinr_common.h"

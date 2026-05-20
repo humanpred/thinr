@@ -1,15 +1,32 @@
-// Hilditch (1969), "Linear skeletons from square cupboards",
-// Machine Intelligence 4.
+// Hilditch-family parallel thinning.
 //
-// Single-pass parallel thinning. The distinctive feature of Hilditch
-// is the **look-ahead crossing-number check** on cardinal neighbours:
-// when conditions 3 and 4 trigger, the algorithm computes A(p2) (or
-// A(p4)) under the assumption that the centre pixel has been removed,
-// and refuses the removal if that would change the topological
-// character of the neighbour.
+// References:
+//   - Hilditch (1969), "Linear skeletons from square cupboards",
+//     Machine Intelligence 4. Origin of the look-ahead crossing-number
+//     idea.
+//   - Rutovitz (1966), parallel form. Survey reference [103].
+//   - Lam, Lee & Suen (1992), "Thinning Methodologies - A Comprehensive
+//     Survey", IEEE TPAMI 14(9):869-885. The parallel form R1-R4 is
+//     described on page 876; this implementation matches that form.
 //
-// Implementation note: the look-ahead requires reading rows r-2 / r+2
-// and columns c-2 / c+2. Out-of-bounds reads are treated as
+// Important: the implementation here is the **parallel form**
+// commonly labelled "Hilditch" in modern image-processing references
+// (Rutovitz R1-R4 with look-ahead crossing-number checks at p2 and
+// p4). Hilditch's original 1969 algorithm is *sequential* with raster
+// scan and within-pass deletion tracking via an R set, and uses the
+// Hilditch crossing number X_H rather than the Rutovitz X_R / Zhang-
+// Suen A(p) crossing number used here. The two produce similar but
+// not identical skeletons. See the survey, pages 871-876.
+//
+// Distinctive feature of this form vs. Zhang-Suen: the look-ahead
+// crossing-number check on cardinal neighbours - when conditions 3
+// and 4 trigger, the algorithm computes A(p2) (or A(p4)) under the
+// assumption that the centre pixel has been removed, and refuses the
+// removal if that would change the topological character of the
+// neighbour.
+//
+// Implementation note: the look-ahead requires reading rows r-2 /
+// r+2 and columns c-2 / c+2. Out-of-bounds reads are treated as
 // background.
 
 #include <Rcpp.h>

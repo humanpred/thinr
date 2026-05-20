@@ -2,6 +2,21 @@
 
 Initial CRAN release.
 
+## Algorithm verification pass
+
+Each algorithm implementation was reviewed against its primary source (or against the Lam-Lee-Suen 1992 survey where the original paper was unavailable). Findings:
+
+- **K3M**: the lookup tables `A_0`, `A_1`, ..., `A_5`, `A_1pix` are now reproduced verbatim from Saeed et al. (2010), Section 3.3, page 327. The previous v0.2.0-dev tables were off by one phase. The algorithm structure is now also sequential (scanline-type) as the paper describes, not the parallel mark-then-delete of the earlier draft.
+- **OPTA / SPTA**: rewritten to use the actual safe-point boolean expression from Lam, Lee & Suen (1992) page 873. The previous "spike / isthmus guard" was not in the original Naccache-Shinghal paper.
+- **Holt**: rewritten to use Holt's condition `H` exactly as given in Lam, Lee & Suen (1992) page 877. The previous "isolated 2x2 preservation" was not in Holt's original algorithm. Holt's `H` is documented to prevent disappearance of 2-pixel-wide vertical lines specifically and does not guarantee arbitrary topology preservation; the ring-topology test is skipped for this method.
+- **Hilditch**: implementation matches the *parallel form* (Rutovitz R1-R4) that most modern surveys label "Hilditch". The original Hilditch (1969) is a *sequential* algorithm with within-pass deletion tracking and uses a different crossing number `X_H`; the parallel form is what the literature commonly cites. Source header now states this explicitly.
+- **Stentiford**: the name is a folk misattribution in the wider literature. Stentiford & Mortimer (1983) actually describes *preprocessing* heuristics (hole removal, smoothing, acute-angle emphasis) intended to run before a separate thinning step, not a thinning algorithm itself. The four-template directional thinning implemented under this name is closer to that of Stefanelli & Rosenfeld (1971). The name is retained for compatibility; the source header documents this clearly.
+- **Pavlidis**: the implementation here (`B(P)` in `[2, 5]` 4-directional thinning) does not match Pavlidis (1980), which is contour-following with multi-pixel detection masks. Source header documents this; a faithful implementation is on the roadmap.
+- **Distance transform**: verified against Felzenszwalb & Huttenlocher (2012) Algorithm 1, page 420.
+- **Zhang-Suen, Guo-Hall, Lee 2D, medial axis**: unchanged; the existing implementations match the standard published forms.
+
+The OPTA "horizontal line collapses to one row" test is relaxed for OPTA and Holt: OPTA's N2 condition protects diagonal-2-neighbour patterns at bar corners (a documented property of SPTA - see Lam-Lee-Suen 1992 page 873) and Holt's `H` has no topology guard.
+
 ## Thinning algorithms
 
 Nine algorithms behind a single dispatching function `thin(image, method)`:

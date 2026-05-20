@@ -1,20 +1,26 @@
-// Stentiford & Mortimer (1983), "Some new heuristics for thinning
-// binary handprinted characters for OCR", IEEE Trans Sys Man Cyb
-// 13(1):81-84.
+// Four-template directional thinning, commonly cited as the
+// "Stentiford" thinning algorithm.
 //
-// Four directional templates (T1 = top, T2 = right, T3 = bottom,
-// T4 = left), one per sub-iteration. The distinctive feature versus
-// Lee's directional thinning is the **strict 3-pixel template** for
-// each side: T1 requires the entire top row of the 3x3 neighbourhood
-// to be background (p9 == p2 == p3 == 0), not just the north
-// neighbour. Marked pixels are removed iff connectivity is preserved
-// (A(P) = 1) and the pixel is not an endpoint (B(P) >= 2).
+// Important: this method's common name in the image-processing
+// literature is a **folk misattribution**. The Stentiford &
+// Mortimer (1983) paper ("Some new heuristics for thinning binary
+// handprinted characters for OCR", IEEE Trans Sys Man Cyb 13(1):
+// 81-84) actually describes *preprocessing heuristics* (hole
+// removal, smoothing, acute-angle emphasis via H / I / D / U
+// templates) intended to run *before* a separate thinning step. It
+// is not a complete thinning algorithm. The 4-directional template
+// approach implemented here is closer to that of Stefanelli &
+// Rosenfeld (1971), survey reference [115]; the algorithm has been
+// retained under the name "stentiford" for compatibility with the
+// common literature attribution.
 //
-// Implementation note: the strict-template form follows the
-// description in standard image-processing references and in the
-// review at https://cgm.cs.mcgill.ca/~godfried/teaching/projects97/azar/skeleton.html.
-// Reviewers familiar with Stentiford & Mortimer (1983) are invited to
-// verify against the original publication.
+// Algorithm:
+//   Four directional templates (T1 = top, T2 = right, T3 = bottom,
+//   T4 = left), one per sub-iteration. Each template requires the
+//   entire 3-pixel side of the 3x3 neighbourhood to be background:
+//   T1 requires p9 == p2 == p3 == 0, etc. Marked pixels are removed
+//   iff connectivity is preserved (A(P) = 1) and the pixel is not
+//   an endpoint (B(P) >= 2).
 
 #include <Rcpp.h>
 #include "thinr_common.h"
