@@ -9,6 +9,11 @@ reference:
       - thin
       - thinImage
 
+  - title: "Medial axis and distance transform"
+    contents:
+      - medial_axis
+      - distance_transform
+
   - title: "Package"
     contents:
       - thinr-package
