@@ -33,14 +33,6 @@
     .Call(`_thinr_opta_cpp`, img, max_iter)
 }
 
-.pavlidis_cpp <- function(img, max_iter) {
-    .Call(`_thinr_pavlidis_cpp`, img, max_iter)
-}
-
-.stentiford_cpp <- function(img, max_iter) {
-    .Call(`_thinr_stentiford_cpp`, img, max_iter)
-}
-
 .zhang_suen_cpp <- function(img, max_iter) {
     .Call(`_thinr_zhang_suen_cpp`, img, max_iter)
 }

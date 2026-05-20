@@ -105,30 +105,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// pavlidis_cpp
-IntegerMatrix pavlidis_cpp(IntegerMatrix img, int max_iter);
-RcppExport SEXP _thinr_pavlidis_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
-    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(pavlidis_cpp(img, max_iter));
-    return rcpp_result_gen;
-END_RCPP
-}
-// stentiford_cpp
-IntegerMatrix stentiford_cpp(IntegerMatrix img, int max_iter);
-RcppExport SEXP _thinr_stentiford_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
-    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(stentiford_cpp(img, max_iter));
-    return rcpp_result_gen;
-END_RCPP
-}
 // zhang_suen_cpp
 IntegerMatrix zhang_suen_cpp(IntegerMatrix img, int max_iter);
 RcppExport SEXP _thinr_zhang_suen_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
@@ -151,8 +127,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_thinr_lee_cpp", (DL_FUNC) &_thinr_lee_cpp, 2},
     {"_thinr_medial_axis_cpp", (DL_FUNC) &_thinr_medial_axis_cpp, 1},
     {"_thinr_opta_cpp", (DL_FUNC) &_thinr_opta_cpp, 2},
-    {"_thinr_pavlidis_cpp", (DL_FUNC) &_thinr_pavlidis_cpp, 2},
-    {"_thinr_stentiford_cpp", (DL_FUNC) &_thinr_stentiford_cpp, 2},
     {"_thinr_zhang_suen_cpp", (DL_FUNC) &_thinr_zhang_suen_cpp, 2},
     {NULL, NULL, 0}
 };

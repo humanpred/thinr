@@ -10,9 +10,8 @@
 #' @param method Algorithm to use. One of `"zhang_suen"` (default,
 #'   matches `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D
 #'   adaptation of Lee, Kashyap & Chu 1994), `"k3m"` (Saeed et al.
-#'   2010), `"hilditch"` (Hilditch 1969), `"stentiford"` (Stentiford &
-#'   Mortimer 1983), `"pavlidis"` (Pavlidis 1980), `"opta"`
-#'   (Naccache & Shinghal 1984), or `"holt"` (Holt et al. 1987).
+#'   2010), `"hilditch"` (Hilditch 1969), `"opta"` (Naccache &
+#'   Shinghal 1984), or `"holt"` (Holt et al. 1987).
 #'   See `vignette("choosing-a-method")` for guidance on which to pick.
 #' @param max_iter Maximum number of passes. Default 1000. Real binary
 #'   images of typical sizes converge well under 50 passes; the limit is
@@ -37,8 +36,7 @@
 #' @export
 thin <- function(image,
                  method = c("zhang_suen", "guo_hall", "lee", "k3m",
-                            "hilditch", "stentiford", "pavlidis",
-                            "opta", "holt"),
+                            "hilditch", "opta", "holt"),
                  max_iter = 1000L) {
   method <- match.arg(method)
   mat <- as_binary_matrix(image)
@@ -49,8 +47,6 @@ thin <- function(image,
     lee        = .lee_cpp(mat,        iter),
     k3m        = .k3m_cpp(mat,        iter),
     hilditch   = .hilditch_cpp(mat,   iter),
-    stentiford = .stentiford_cpp(mat, iter),
-    pavlidis   = .pavlidis_cpp(mat,   iter),
     opta       = .opta_cpp(mat,       iter),
     holt       = .holt_cpp(mat,       iter)
   )

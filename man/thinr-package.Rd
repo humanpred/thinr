@@ -8,30 +8,31 @@
 \description{
 Thinning (also called skeletonization) reduces a binary image of a
 shape to a one-pixel-wide centerline that preserves the shape's
-topology. \code{thinr} provides nine thinning algorithms behind a
+topology. \code{thinr} provides seven thinning algorithms behind a
 single dispatching function, plus the medial axis transform and a
 fast distance transform.
 }
 \section{Thinning algorithms (\code{thin(method = ...)})}{
 
 \itemize{
-\item \code{zhang_suen} — Zhang & Suen (1984). Default; matches
+\item \code{zhang_suen} — Zhang & Suen (1984)
+\doi{10.1145/357994.358023}. Default; matches
 \code{EBImage::thinImage}.
-\item \code{guo_hall} — Guo & Hall (1989). Often better corner preservation
-on diagonal features.
-\item \code{lee} — Lee, Kashyap & Chu (1994), 2-D adaptation. Four
-directional sub-iterations.
-\item \code{k3m} — Saeed et al. (2010). Six-phase lookup-table thinning.
-\item \code{hilditch} — Hilditch (1969). Single-pass parallel thinning with
+\item \code{guo_hall} — Guo & Hall (1989) \doi{10.1145/62065.62074}. Often
+better corner preservation on diagonal features.
+\item \code{lee} — Lee, Kashyap & Chu (1994) \doi{10.1006/cgip.1994.1042},
+2-D adaptation. Four directional sub-iterations.
+\item \code{k3m} — Saeed, Tabędzki, Rybnik & Adamski (2010)
+\doi{10.2478/v10006-010-0024-4}. Six-phase lookup-table thinning.
+\item \code{hilditch} — parallel form commonly attributed to Hilditch
+(1969, in \emph{Machine Intelligence 4}). Single-pass thinning with
 look-ahead crossing-number check.
-\item \code{stentiford} — Stentiford & Mortimer (1983). Four directional
-3-pixel templates per pass.
-\item \code{pavlidis} — Pavlidis (1980). Directional thinning with
-restrictive interior preservation (\code{B(P) <= 5}).
-\item \code{opta} — Naccache & Shinghal (1984). One-pass thinning derived
-from Hilditch.
-\item \code{holt} — Holt et al. (1987). Zhang-Suen variant that preserves
-isolated 2x2 blocks.
+\item \code{opta} — Naccache & Shinghal (1984), "An investigation into the
+skeletonization approach of Hilditch", \emph{Pattern Recognition}
+17(3):279-284. One-pass safe-point thinning (SPTA).
+\item \code{holt} — Holt, Stewart, Clint & Perrott (1987)
+\doi{10.1145/12527.12531}. One-subcycle parallel thinning with
+edge information about neighbours.
 }
 
 See \code{\link[=thin]{thin()}} and \code{vignette("choosing-a-method")} for guidance.

@@ -2,7 +2,7 @@
 # Run for all implemented methods.
 
 methods <- c("zhang_suen", "guo_hall", "lee", "k3m",
-             "hilditch", "stentiford", "pavlidis", "opta", "holt")
+             "hilditch", "opta", "holt")
 
 describe("solid square thins to a much smaller skeleton", {
   for (mth in methods) {

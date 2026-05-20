@@ -2,29 +2,30 @@
 #'
 #' Thinning (also called skeletonization) reduces a binary image of a
 #' shape to a one-pixel-wide centerline that preserves the shape's
-#' topology. `thinr` provides nine thinning algorithms behind a
+#' topology. `thinr` provides seven thinning algorithms behind a
 #' single dispatching function, plus the medial axis transform and a
 #' fast distance transform.
 #'
 #' @section Thinning algorithms (`thin(method = ...)`):
 #'
-#' - `zhang_suen` — Zhang & Suen (1984). Default; matches
+#' - `zhang_suen` — Zhang & Suen (1984)
+#'   \doi{10.1145/357994.358023}. Default; matches
 #'   `EBImage::thinImage`.
-#' - `guo_hall` — Guo & Hall (1989). Often better corner preservation
-#'   on diagonal features.
-#' - `lee` — Lee, Kashyap & Chu (1994), 2-D adaptation. Four
-#'   directional sub-iterations.
-#' - `k3m` — Saeed et al. (2010). Six-phase lookup-table thinning.
-#' - `hilditch` — Hilditch (1969). Single-pass parallel thinning with
+#' - `guo_hall` — Guo & Hall (1989) \doi{10.1145/62065.62074}. Often
+#'   better corner preservation on diagonal features.
+#' - `lee` — Lee, Kashyap & Chu (1994) \doi{10.1006/cgip.1994.1042},
+#'   2-D adaptation. Four directional sub-iterations.
+#' - `k3m` — Saeed, Tabędzki, Rybnik & Adamski (2010)
+#'   \doi{10.2478/v10006-010-0024-4}. Six-phase lookup-table thinning.
+#' - `hilditch` — parallel form commonly attributed to Hilditch
+#'   (1969, in *Machine Intelligence 4*). Single-pass thinning with
 #'   look-ahead crossing-number check.
-#' - `stentiford` — Stentiford & Mortimer (1983). Four directional
-#'   3-pixel templates per pass.
-#' - `pavlidis` — Pavlidis (1980). Directional thinning with
-#'   restrictive interior preservation (`B(P) <= 5`).
-#' - `opta` — Naccache & Shinghal (1984). One-pass thinning derived
-#'   from Hilditch.
-#' - `holt` — Holt et al. (1987). Zhang-Suen variant that preserves
-#'   isolated 2x2 blocks.
+#' - `opta` — Naccache & Shinghal (1984), "An investigation into the
+#'   skeletonization approach of Hilditch", *Pattern Recognition*
+#'   17(3):279-284. One-pass safe-point thinning (SPTA).
+#' - `holt` — Holt, Stewart, Clint & Perrott (1987)
+#'   \doi{10.1145/12527.12531}. One-subcycle parallel thinning with
+#'   edge information about neighbours.
 #'
 #' See [thin()] and `vignette("choosing-a-method")` for guidance.
 #'
