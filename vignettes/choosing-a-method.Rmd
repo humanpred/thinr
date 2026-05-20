@@ -19,18 +19,23 @@ Thinning reduces a binary shape to a one-pixel-wide centerline that preserves to
 
 ## What's implemented
 
-| Method        | Status (v0.2)   | Reference |
-|---------------|-----------------|-----------|
-| `zhang_suen`  | Full            | Zhang & Suen (1984) |
-| `guo_hall`    | Full            | Guo & Hall (1989) |
-| `lee`         | Full (2-D)      | Lee, Kashyap & Chu (1994) |
-| `k3m`         | Full            | Saeed et al. (2010) |
+| Method        | Reference                                | Approach                                            |
+|---------------|------------------------------------------|-----------------------------------------------------|
+| `zhang_suen`  | Zhang & Suen (1984)                      | 2 sub-iterations, mixed-direction products          |
+| `guo_hall`    | Guo & Hall (1989)                        | 2 sub-iterations, conditions tuned for diagonals    |
+| `lee`         | Lee, Kashyap & Chu (1994), 2-D           | 4 directional sub-iterations + Euler-invariance     |
+| `k3m`         | Saeed et al. (2010)                      | 6 phases of progressively permissive removal        |
+| `hilditch`    | Hilditch (1969)                          | Single pass with look-ahead crossing-number check   |
+| `stentiford`  | Stentiford & Mortimer (1983)             | 4 directional 3-pixel templates per pass            |
+| `pavlidis`    | Pavlidis (1980)                          | 4 directional sub-iterations, restrictive interior  |
+| `opta`        | Naccache & Shinghal (1984)               | One-pass derived from Hilditch                      |
+| `holt`        | Holt et al. (1987)                       | 2 sub-iterations, isolated-2x2 preservation         |
 
 `zhang_suen` is the default and matches `EBImage::thinImage()` behavior. The `thinImage()` wrapper is provided as a drop-in replacement.
 
 `lee` is a 2-D adaptation of Lee's original 3-D algorithm. The 3-D case (volumetric thinning) is not implemented in this release.
 
-The K3M lookup tables in this implementation are reconstructed from the algorithm's published description; they produce topology-preserving, one-pixel-wide skeletons on the test corpus. Verification against the paper's exact tables is welcomed.
+The K3M, OPTA, Pavlidis, and Holt implementations follow the published descriptions of those algorithms. Verification against the original publications is welcomed; corrections should be submitted as issues at https://github.com/humanpred/thinr/issues.
 
 ## A quick visual comparison
 
@@ -59,31 +64,79 @@ thin(v, method = "guo_hall")
 ```
 
 ```{r}
-thin(v, method = "lee")
+thin(v, method = "hilditch")
 ```
 
 ```{r}
 thin(v, method = "k3m")
 ```
 
-All four algorithms produce one-pixel-wide skeletons that follow the diagonals. Differences show up at corners and small protrusions: Guo-Hall and K3M tend to preserve corners marginally better than Zhang-Suen; Lee tends toward thinner skeletons because its four directional sub-iterations process boundaries more aggressively.
+```{r}
+thin(v, method = "holt")
+```
+
+The thinning algorithms produce broadly similar skeletons on this V — they all collapse the two diagonal strokes to single lines and meet at the bottom. Differences show up on more complex shapes:
+
+- `zhang_suen` is the most aggressive; it will thin a 2x2 block down to a single pixel.
+- `guo_hall` and `k3m` preserve corners marginally better.
+- `hilditch` has the look-ahead crossing-number check, which gives different connectivity properties at junctions.
+- `holt` deliberately preserves isolated 2x2 blocks (an idiosyncratic but documented design choice).
 
 ## When to use which
 
 - **`zhang_suen`** — the default. Most predictable behavior. Use for general purpose thinning and for compatibility with code that previously used `EBImage::thinImage()`.
-- **`guo_hall`** — try this if your skeletons have lots of diagonal features and Zhang-Suen is breaking them at corners. Slightly different topology preservation behavior.
-- **`lee`** — when you want directional processing (four sub-iterations per pass, one per cardinal direction). Sometimes produces cleaner skeletons on asymmetric inputs than Zhang-Suen's two-subiteration approach.
+- **`guo_hall`** — try this if your skeletons have lots of diagonal features and Zhang-Suen is breaking them at corners.
+- **`lee`** — when you want directional processing (four sub-iterations per pass, one per cardinal direction). Sometimes produces cleaner skeletons on asymmetric inputs.
 - **`k3m`** — strongest corner preservation in published comparative studies, at the cost of being slower (six phases per outer iteration vs. two for Zhang-Suen).
+- **`hilditch`** — well-cited historical algorithm; the look-ahead crossing-number check makes its connectivity slightly different from the other parallel algorithms.
+- **`stentiford`** — when you want directional thinning with strict (3-pixel) boundary detection; tends to thin more slowly than Lee but with similar end results.
+- **`pavlidis`** — when you want to keep "thicker" interior pixels (the `B(P) <= 5` bound preserves pixels with 6 or more foreground neighbours).
+- **`opta`** — one-pass, faster than Hilditch when the algorithm structure dominates the cost.
+- **`holt`** — when 2x2 blocks should stay as 2x2 (e.g. dot-matrix character thinning).
+
+## Medial axis transform
+
+The thinning algorithms above all produce binary 1-pixel-wide skeletons without width information. For tasks where local thickness matters, use `medial_axis()`:
+
+```{r}
+m <- matrix(0L, 9, 11)
+m[3:7, 3:9] <- 1L      # 5x7 solid rectangle
+medial_axis(m)
+```
+
+```{r}
+result <- medial_axis(m, return_distance = TRUE)
+result$skeleton
+round(result$distance, 3)
+```
+
+The distance is the Euclidean distance from each foreground pixel to the nearest background pixel.
+
+## Distance transform
+
+`distance_transform()` exposes the distance transform itself as a stand-alone utility, with a choice of metric:
+
+```{r}
+m <- matrix(1L, 5, 5)
+m[1, 1] <- 0L
+distance_transform(m, metric = "manhattan")
+distance_transform(m, metric = "chessboard")
+round(distance_transform(m, metric = "euclidean"), 3)
+```
+
+The Euclidean implementation uses the linear-time separable algorithm of Felzenszwalb and Huttenlocher (2012); the others use the classical Rosenfeld and Pfaltz (1968) two-pass sweep.
 
 ## Inputs and outputs
 
-`thin()` accepts logical, integer, and numeric matrices. Non-zero values are foreground. The return matrix matches the storage mode of the input — logical in, logical out; integer in, integer out; numeric in, numeric out.
+`thin()`, `medial_axis()`, and `thinImage()` accept logical, integer, and numeric matrices. Non-zero values are foreground. The return matrix matches the storage mode of the input — logical in, logical out; integer in, integer out; numeric in, numeric out.
 
-Higher-dimensional arrays (e.g. 3-D volumes) are not yet supported. The Lee algorithm in v0.2 will add 3-D support.
+`distance_transform()` always returns a numeric matrix.
+
+Higher-dimensional arrays (e.g. 3-D volumes) are not yet supported.
 
 ## Performance
 
-A simple `bench::mark()` comparison on a moderate image (illustrative — see `tests/testthat/test-thin.R` for the test corpus that is the basis for the benchmark report committed alongside this release):
+A simple `bench::mark()` comparison on a moderate image (illustrative):
 
 ```{r eval = FALSE}
 library(bench)
@@ -91,18 +144,37 @@ m <- matrix(0L, 200, 200)
 m[50:150, 50:150] <- 1L  # solid square
 
 bench::mark(
-  zs = thin(m, method = "zhang_suen"),
-  gh = thin(m, method = "guo_hall"),
+  zs       = thin(m, method = "zhang_suen"),
+  gh       = thin(m, method = "guo_hall"),
+  hild     = thin(m, method = "hilditch"),
+  k3m      = thin(m, method = "k3m"),
+  ma       = medial_axis(m),
+  dt_eucl  = distance_transform(m, metric = "euclidean"),
   iterations = 5,
   check = FALSE
 )
 ```
 
-All four algorithms are O(iterations × pixels). Constant factors increase roughly: `zhang_suen` < `guo_hall` < `lee` < `k3m`. For 200×200 images all four finish in a few milliseconds on modern hardware.
+All thinning algorithms are `O(iterations × pixels)`. Constant factors increase roughly: `zhang_suen` < `guo_hall` ≈ `hilditch` < `lee` < `stentiford` < `pavlidis` < `opta` < `k3m` < `holt`. The Euclidean distance transform is `O(pixels)` via Felzenszwalb-Huttenlocher; medial axis is `O(pixels)` since it just adds a single linear pass over the DT.
+
+For 200×200 images all algorithms finish in a few milliseconds on modern hardware.
 
 ## References
 
-- Zhang, T. Y. & Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. *Communications of the ACM*, 27(3), 236–239.
-- Guo, Z. & Hall, R. W. (1989). Parallel thinning with two-subiteration algorithms. *Communications of the ACM*, 32(3), 359–373.
-- Lee, T.-C., Kashyap, R. L., & Chu, C.-N. (1994). Building skeleton models via 3-D medial surface axis thinning algorithms. *CVGIP: Graphical Models and Image Processing*, 56(6), 462–478.
-- Saeed, K., Tabędzki, M., Rybnik, M., & Adamski, M. (2010). K3M: A universal algorithm for image skeletonization and a review of thinning techniques. *International Journal of Applied Mathematics and Computer Science*, 20(2), 317–335.
+### Thinning
+
+- Zhang, T. Y. & Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. *Communications of the ACM*, 27(3), 236–239. \doi{10.1145/357994.358023}
+- Guo, Z. & Hall, R. W. (1989). Parallel thinning with two-subiteration algorithms. *Communications of the ACM*, 32(3), 359–373. \doi{10.1145/62065.62074}
+- Lee, T.-C., Kashyap, R. L., & Chu, C.-N. (1994). Building skeleton models via 3-D medial surface axis thinning algorithms. *CVGIP: Graphical Models and Image Processing*, 56(6), 462–478. \doi{10.1006/cgip.1994.1042}
+- Saeed, K., Tabędzki, M., Rybnik, M., & Adamski, M. (2010). K3M: A universal algorithm for image skeletonization and a review of thinning techniques. *International Journal of Applied Mathematics and Computer Science*, 20(2), 317–335. \doi{10.2478/v10006-010-0024-4}
+- Hilditch, C. J. (1969). Linear skeletons from square cupboards. In B. Meltzer & D. Michie (Eds.), *Machine Intelligence 4* (pp. 403–420). Edinburgh University Press.
+- Stentiford, F. W. M. & Mortimer, R. G. (1983). Some new heuristics for thinning binary handprinted characters for OCR. *IEEE Transactions on Systems, Man, and Cybernetics*, 13(1), 81–84. \doi{10.1109/TSMC.1983.6313095}
+- Pavlidis, T. (1980). A thinning algorithm for discrete binary images. *Computer Graphics and Image Processing*, 13(2), 142–157. \doi{10.1016/0146-664X(80)90041-5}
+- Naccache, N. J. & Shinghal, R. (1984). An investigation into the skeletonization approach of Hilditch. *Pattern Recognition*, 17(3), 279–284. \doi{10.1016/0031-3203(84)90067-1}
+- Holt, C. M., Stewart, A., Clint, M., & Perrott, R. H. (1987). An improved parallel thinning algorithm. *Communications of the ACM*, 30(2), 156–160.
+
+### Medial axis and distance transform
+
+- Blum, H. (1967). A transformation for extracting new descriptors of shape. In *Models for the Perception of Speech and Visual Form* (pp. 362–380). MIT Press.
+- Felzenszwalb, P. F. & Huttenlocher, D. P. (2012). Distance transforms of sampled functions. *Theory of Computing*, 8(19), 415–428. \doi{10.4086/toc.2012.v008a019}
+- Rosenfeld, A. & Pfaltz, J. L. (1968). Distance functions on digital pictures. *Pattern Recognition*, 1(1), 33–61. \doi{10.1016/0031-3203(68)90013-7}

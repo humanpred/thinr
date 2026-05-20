@@ -7,16 +7,22 @@ Authors@R:
            comment = c(ORCID = "0000-0002-5759-428X",
                        affiliation = "Human Predictions, LLC"))
 Description: Thinning (skeletonization) algorithms for binary raster
-    images. Provides four algorithms behind a single dispatching
+    images. Provides nine algorithms behind a single dispatching
     function: Zhang-Suen (Zhang and Suen 1984)
     <doi:10.1145/357994.358023>, Guo-Hall (Guo and Hall 1989)
-    <doi:10.1145/62065.62074>, a 2-D adaptation of Lee (Lee, Kashyap,
-    and Chu 1994) <doi:10.1006/cgip.1994.1042>, and K3M (Saeed,
-    Tabedzki, Rybnik, and Adamski 2010) <doi:10.2478/v10006-010-0024-4>.
-    The drop-in thinImage() matches the signature of thinImage() in
-    the 'EBImage' package on Bioconductor so existing code can switch
-    parsers without changes. The wider thin() API selects the
-    algorithm by name.
+    <doi:10.1145/62065.62074>, a 2-D adaptation of Lee
+    (Lee, Kashyap, and Chu 1994) <doi:10.1006/cgip.1994.1042>, K3M
+    (Saeed, Tabedzki, Rybnik, and Adamski 2010)
+    <doi:10.2478/v10006-010-0024-4>, Hilditch (1969), Stentiford and
+    Mortimer (1983) <doi:10.1109/TSMC.1983.6313095>, Pavlidis (1980),
+    OPTA (Naccache and Shinghal 1984), and Holt and colleagues
+    (1987). Also provides the medial axis transform (Blum 1967) and
+    a distance transform implementation following Felzenszwalb and
+    Huttenlocher (2012) <doi:10.4086/toc.2012.v008a019>. The drop-in
+    thinImage() matches the signature of thinImage() in the 'EBImage'
+    package on Bioconductor so existing code can switch parsers
+    without changes. The wider thin() API selects the algorithm by
+    name.
 License: LGPL-3
 Encoding: UTF-8
 Depends:

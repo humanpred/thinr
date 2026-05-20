@@ -8,20 +8,44 @@
 \description{
 Thinning (also called skeletonization) reduces a binary image of a
 shape to a one-pixel-wide centerline that preserves the shape's
-topology. \code{thinr} provides multiple thinning algorithms behind a
-single dispatching function.
+topology. \code{thinr} provides nine thinning algorithms behind a
+single dispatching function, plus the medial axis transform and a
+fast distance transform.
 }
-\section{Algorithms}{
+\section{Thinning algorithms (\code{thin(method = ...)})}{
 
 \itemize{
-\item \code{\link[=thin]{zhang_suen}} — Zhang & Suen (1984). Fast, well-known,
-matches the algorithm in \code{EBImage::thinImage}. Default.
-\item \code{\link[=thin]{guo_hall}} — Guo & Hall (1989). Often better corner
-preservation than Zhang-Suen on diagonal features.
-\item \code{\link[=thin]{lee}} — Lee, Kashyap & Chu (1994), 2-D adaptation. Four
-directional sub-iterations with crossing-number Euler-invariance.
-\item \code{\link[=thin]{k3m}} — Saeed et al. (2010). Six-phase lookup-table
-thinning; strong corner preservation.
+\item \code{zhang_suen} — Zhang & Suen (1984). Default; matches
+\code{EBImage::thinImage}.
+\item \code{guo_hall} — Guo & Hall (1989). Often better corner preservation
+on diagonal features.
+\item \code{lee} — Lee, Kashyap & Chu (1994), 2-D adaptation. Four
+directional sub-iterations.
+\item \code{k3m} — Saeed et al. (2010). Six-phase lookup-table thinning.
+\item \code{hilditch} — Hilditch (1969). Single-pass parallel thinning with
+look-ahead crossing-number check.
+\item \code{stentiford} — Stentiford & Mortimer (1983). Four directional
+3-pixel templates per pass.
+\item \code{pavlidis} — Pavlidis (1980). Directional thinning with
+restrictive interior preservation (\code{B(P) <= 5}).
+\item \code{opta} — Naccache & Shinghal (1984). One-pass thinning derived
+from Hilditch.
+\item \code{holt} — Holt et al. (1987). Zhang-Suen variant that preserves
+isolated 2x2 blocks.
+}
+
+See \code{\link[=thin]{thin()}} and \code{vignette("choosing-a-method")} for guidance.
+}
+
+\section{Medial axis and distance transform}{
+
+\itemize{
+\item \code{\link[=medial_axis]{medial_axis()}} — Medial axis transform (Blum 1967): the locus
+of foreground pixels that are ridge points of the distance
+transform. Optionally returns the per-pixel distance.
+\item \code{\link[=distance_transform]{distance_transform()}} — Euclidean (Felzenszwalb-Huttenlocher
+2012, linear-time separable), Manhattan, or Chessboard distance
+from each foreground pixel to the nearest background pixel.
 }
 }
 
@@ -31,13 +55,6 @@ thinning; strong corner preservation.
 \code{\link[=thinImage]{thinImage()}} matches the signature of \code{EBImage::thinImage()}. Code
 that uses \code{EBImage::thinImage} can switch to \code{thinr::thinImage} with
 no other changes.
-}
-
-\section{Choosing an algorithm}{
-
-
-See \code{vignette("choosing-a-method", package = "thinr")} for guidance
-on which algorithm to pick for which kind of image.
 }
 
 \seealso{
@@ -50,11 +67,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Bill Denney \email{wdenney@humanpredictions.com} (affiliation: Human Predictions, LLC)
+\strong{Maintainer}: Bill Denney \email{wdenney@humanpredictions.com} (\href{https://orcid.org/0000-0002-5759-428X}{ORCID}) (affiliation: Human Predictions, LLC)
 
 Authors:
 \itemize{
-  \item Bill Denney \email{wdenney@humanpredictions.com} (affiliation: Human Predictions, LLC)
+  \item Bill Denney \email{wdenney@humanpredictions.com} (\href{https://orcid.org/0000-0002-5759-428X}{ORCID}) (affiliation: Human Predictions, LLC)
 }
 
 }
