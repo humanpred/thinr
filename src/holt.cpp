@@ -1,48 +1,66 @@
 // Holt, Stewart, Clint & Perrott (1987), "An improved parallel
 // thinning algorithm", Communications of the ACM 30(2):156-160.
+// doi:10.1145/12527.12531
 //
-// Reference for the verified form: Lam, Lee & Suen (1992), "Thinning
-// Methodologies - A Comprehensive Survey", IEEE TPAMI 14(9):869-885,
-// page 877.
+// Single-subiteration parallel algorithm using edge information about
+// neighbours. The survival expression (Section 2, p. 157) is:
 //
-// One-subcycle parallel algorithm. A pixel p is deleted iff Holt's
-// condition H is true:
+//   survive(C) = vC AND (~edgeC OR
+//                        (edgeE AND vN AND vS) OR
+//                        (edgeS AND vW AND vE) OR
+//                        (edgeE AND edgeSE AND edgeS))
 //
-//   H = edge(p) AND
-//       (~edge(x_1) OR ~x_3 OR ~x_7) AND
-//       (~edge(x_7) OR ~x_5 OR ~x_3) AND
-//       (~edge(x_1) OR ~edge(x_8) OR ~edge(x_7))
+// where vX is the foreground value at position X and edgeX is the
+// edge() function evaluated at X. An element is REMOVED iff survive
+// is false; for a foreground element this becomes:
 //
-// where edge(q) means q has at least one 4-cardinal background
-// neighbour. In thinr's labelling, x_1 = E (p4), x_3 = N (p2),
-// x_5 = W (p8), x_7 = S (p6), x_8 = SE (p5).
+//   remove(C) = edgeC AND (~edgeE OR ~vN OR ~vS)
+//                     AND (~edgeS OR ~vW OR ~vE)
+//                     AND (~edgeE OR ~edgeSE OR ~edgeS)
 //
-// The survey notes Holt is "almost equivalent" to the Rutovitz R1-R4
-// parallel form except that Holt uses edge-information on neighbours
-// rather than crossing-number information, and adds the third
-// compound expression (the 3-edge condition on E, SE, S).
+// edge() (Appendix A) is the full simple-point check: a pixel is on
+// the edge iff its 8-neighbourhood has B(p) in [2, 6] foreground
+// neighbours AND A(p) = 1 (exactly one 0->1 transition in the cyclic
+// neighbour sequence). This is the same condition Zhang-Suen uses for
+// candidate selection.
 //
-// Implementation note: evaluating edge(x_1), edge(x_7), edge(x_8)
-// requires reading a 5x5 window around p (we need each neighbour's
-// own 4-cardinals). Out-of-bounds reads are treated as background.
+// Implementation note: the Lam-Lee-Suen (1992) survey on page 877
+// transcribes Holt's middle clause as "edgeS AND vW AND vN" (with N
+// for the third term), but the original paper (CACM 30(2) p. 157) has
+// "edgeS AND vW AND vE" (with E). The original paper is followed
+// here. Computing edge() at the E, S, and SE neighbours requires
+// reading a 5x5 window around C; out-of-bounds reads are treated as
+// background.
 
 #include <Rcpp.h>
 using namespace Rcpp;
 
 namespace {
 
-// edge(q): true iff q is foreground AND has at least one 4-cardinal
-// background neighbour. Out-of-image positions are treated as
-// background.
-inline bool is_edge_at(const IntegerMatrix& m, int r, int c,
-                       int nrow, int ncol) {
+// Holt's edge() function (Appendix A): foreground simple point with
+// B(p) in [2, 6] and A(p) = 1.
+inline bool holt_edge(const IntegerMatrix& m, int r, int c,
+                      int nrow, int ncol) {
   if (r < 0 || r >= nrow || c < 0 || c >= ncol) return false;
   if (m(r, c) != 1) return false;
-  int N = (r > 0)        ? m(r - 1, c) : 0;
-  int E = (c < ncol - 1) ? m(r, c + 1) : 0;
-  int S = (r < nrow - 1) ? m(r + 1, c) : 0;
-  int W = (c > 0)        ? m(r, c - 1) : 0;
-  return (N == 0) || (E == 0) || (S == 0) || (W == 0);
+
+  int p2 = (r > 0)                          ? m(r - 1, c    ) : 0;  // N
+  int p3 = (r > 0 && c < ncol - 1)          ? m(r - 1, c + 1) : 0;  // NE
+  int p4 = (c < ncol - 1)                   ? m(r,     c + 1) : 0;  // E
+  int p5 = (r < nrow - 1 && c < ncol - 1)   ? m(r + 1, c + 1) : 0;  // SE
+  int p6 = (r < nrow - 1)                   ? m(r + 1, c    ) : 0;  // S
+  int p7 = (r < nrow - 1 && c > 0)          ? m(r + 1, c - 1) : 0;  // SW
+  int p8 = (c > 0)                          ? m(r,     c - 1) : 0;  // W
+  int p9 = (r > 0 && c > 0)                 ? m(r - 1, c - 1) : 0;  // NW
+
+  int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+  if (B < 2 || B > 6) return false;
+
+  int A = (p2 == 0 && p3 == 1) + (p3 == 0 && p4 == 1)
+        + (p4 == 0 && p5 == 1) + (p5 == 0 && p6 == 1)
+        + (p6 == 0 && p7 == 1) + (p7 == 0 && p8 == 1)
+        + (p8 == 0 && p9 == 1) + (p9 == 0 && p2 == 1);
+  return A == 1;
 }
 
 }  // namespace
@@ -61,36 +79,24 @@ IntegerMatrix holt_cpp(IntegerMatrix img, int max_iter) {
     for (int r = 1; r < nrow - 1; r++) {
       for (int c = 1; c < ncol - 1; c++) {
         if (m(r, c) != 1) continue;
-        int p2 = m(r - 1, c);
-        int p4 = m(r,     c + 1);
-        int p5 = m(r + 1, c + 1);
-        int p6 = m(r + 1, c);
-        int p8 = m(r,     c - 1);
+        if (!holt_edge(m, r, c, nrow, ncol)) continue;
 
-        int p3 = m(r - 1, c + 1);
-        int p7 = m(r + 1, c - 1);
-        int p9 = m(r - 1, c - 1);
+        int p2 = m(r - 1, c);  // vN
+        int p4 = m(r,     c + 1);  // vE
+        int p6 = m(r + 1, c);  // vS
+        int p8 = m(r,     c - 1);  // vW
 
-        // edge(p): p has at least one 4-cardinal BG neighbour.
-        bool edge_p = (p2 == 0) || (p4 == 0) || (p6 == 0) || (p8 == 0);
-        if (!edge_p) continue;
+        bool edgeE  = holt_edge(m, r,     c + 1, nrow, ncol);
+        bool edgeS  = holt_edge(m, r + 1, c,     nrow, ncol);
+        bool edgeSE = holt_edge(m, r + 1, c + 1, nrow, ncol);
 
-        // Survey-implicit precondition (Lam-Lee-Suen 1992, page 872):
-        // p is "not an isolated or end point" i.e. b(p) >= 2. Without
-        // this guard, Holt's H would delete isolated foreground pixels.
-        int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-        if (B < 2) continue;
-
-        bool edge_x1 = is_edge_at(m, r,     c + 1, nrow, ncol);  // E  = p4
-        bool edge_x7 = is_edge_at(m, r + 1, c,     nrow, ncol);  // S  = p6
-        bool edge_x8 = is_edge_at(m, r + 1, c + 1, nrow, ncol);  // SE = p5
-
-        // (~edge(x_1) OR ~x_3 OR ~x_7) - x_3 = N = p2, x_7 = S = p6
-        bool a = (!edge_x1) || (p2 == 0) || (p6 == 0);
-        // (~edge(x_7) OR ~x_5 OR ~x_3) - x_5 = W = p8
-        bool b = (!edge_x7) || (p8 == 0) || (p2 == 0);
-        // (~edge(x_1) OR ~edge(x_8) OR ~edge(x_7))
-        bool c_ = (!edge_x1) || (!edge_x8) || (!edge_x7);
+        // remove(C) = edgeC AND
+        //             (~edgeE OR ~vN OR ~vS) AND        [first clause]
+        //             (~edgeS OR ~vW OR ~vE) AND        [second clause - vE per paper]
+        //             (~edgeE OR ~edgeSE OR ~edgeS)     [third clause]
+        bool a = !edgeE || (p2 == 0) || (p6 == 0);
+        bool b = !edgeS || (p8 == 0) || (p4 == 0);
+        bool c_ = !edgeE || !edgeSE || !edgeS;
 
         if (a && b && c_) mark(r, c) = 1;
       }
