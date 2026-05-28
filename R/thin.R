@@ -9,9 +9,10 @@
 #'   matrix; arrays with more than two dimensions are not yet supported.
 #' @param method Algorithm to use. One of `"zhang_suen"` (default,
 #'   matches `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D
-#'   adaptation of Lee, Kashyap & Chu 1994), or `"k3m"` (Saeed et al.
-#'   2010). See `vignette("choosing-a-method")` for guidance on which to
-#'   pick.
+#'   adaptation of Lee, Kashyap & Chu 1994), `"k3m"` (Saeed et al.
+#'   2010), `"hilditch"` (Hilditch 1969), `"opta"` (Naccache &
+#'   Shinghal 1984), or `"holt"` (Holt et al. 1987).
+#'   See `vignette("choosing-a-method")` for guidance on which to pick.
 #' @param max_iter Maximum number of passes. Default 1000. Real binary
 #'   images of typical sizes converge well under 50 passes; the limit is
 #'   a safety bound against pathological inputs.
@@ -30,17 +31,24 @@
 #'             nrow = 5, byrow = TRUE)
 #' thin(m, method = "zhang_suen")
 #' thin(m, method = "guo_hall")
+#' thin(m, method = "hilditch")
 #'
 #' @export
-thin <- function(image, method = c("zhang_suen", "guo_hall", "lee", "k3m"),
+thin <- function(image,
+                 method = c("zhang_suen", "guo_hall", "lee", "k3m",
+                            "hilditch", "opta", "holt"),
                  max_iter = 1000L) {
   method <- match.arg(method)
   mat <- as_binary_matrix(image)
+  iter <- as.integer(max_iter)
   out <- switch(method,
-    zhang_suen = .zhang_suen_cpp(mat, as.integer(max_iter)),
-    guo_hall   = .guo_hall_cpp(mat,   as.integer(max_iter)),
-    lee        = .lee_cpp(mat,        as.integer(max_iter)),
-    k3m        = .k3m_cpp(mat,        as.integer(max_iter))
+    zhang_suen = .zhang_suen_cpp(mat, iter),
+    guo_hall   = .guo_hall_cpp(mat,   iter),
+    lee        = .lee_cpp(mat,        iter),
+    k3m        = .k3m_cpp(mat,        iter),
+    hilditch   = .hilditch_cpp(mat,   iter),
+    opta       = .opta_cpp(mat,       iter),
+    holt       = .holt_cpp(mat,       iter)
   )
   restore_storage(out, image)
 }

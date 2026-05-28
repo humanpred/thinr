@@ -19,3 +19,5 @@
 ^src/symbols\.rds$
 ^doc$
 ^Meta$
+^references$
+^CRAN-SUBMISSION$

@@ -10,6 +10,18 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// distance_transform_cpp
+NumericMatrix distance_transform_cpp(IntegerMatrix img, int metric);
+RcppExport SEXP _thinr_distance_transform_cpp(SEXP imgSEXP, SEXP metricSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
+    Rcpp::traits::input_parameter< int >::type metric(metricSEXP);
+    rcpp_result_gen = Rcpp::wrap(distance_transform_cpp(img, metric));
+    return rcpp_result_gen;
+END_RCPP
+}
 // guo_hall_cpp
 IntegerMatrix guo_hall_cpp(IntegerMatrix img, int max_iter);
 RcppExport SEXP _thinr_guo_hall_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
@@ -19,6 +31,30 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
     Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
     rcpp_result_gen = Rcpp::wrap(guo_hall_cpp(img, max_iter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// hilditch_cpp
+IntegerMatrix hilditch_cpp(IntegerMatrix img, int max_iter);
+RcppExport SEXP _thinr_hilditch_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(hilditch_cpp(img, max_iter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// holt_cpp
+IntegerMatrix holt_cpp(IntegerMatrix img, int max_iter);
+RcppExport SEXP _thinr_holt_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(holt_cpp(img, max_iter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -46,6 +82,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// medial_axis_cpp
+List medial_axis_cpp(IntegerMatrix img);
+RcppExport SEXP _thinr_medial_axis_cpp(SEXP imgSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
+    rcpp_result_gen = Rcpp::wrap(medial_axis_cpp(img));
+    return rcpp_result_gen;
+END_RCPP
+}
+// opta_cpp
+IntegerMatrix opta_cpp(IntegerMatrix img, int max_iter);
+RcppExport SEXP _thinr_opta_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type img(imgSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(opta_cpp(img, max_iter));
+    return rcpp_result_gen;
+END_RCPP
+}
 // zhang_suen_cpp
 IntegerMatrix zhang_suen_cpp(IntegerMatrix img, int max_iter);
 RcppExport SEXP _thinr_zhang_suen_cpp(SEXP imgSEXP, SEXP max_iterSEXP) {
@@ -60,9 +119,14 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_thinr_distance_transform_cpp", (DL_FUNC) &_thinr_distance_transform_cpp, 2},
     {"_thinr_guo_hall_cpp", (DL_FUNC) &_thinr_guo_hall_cpp, 2},
+    {"_thinr_hilditch_cpp", (DL_FUNC) &_thinr_hilditch_cpp, 2},
+    {"_thinr_holt_cpp", (DL_FUNC) &_thinr_holt_cpp, 2},
     {"_thinr_k3m_cpp", (DL_FUNC) &_thinr_k3m_cpp, 2},
     {"_thinr_lee_cpp", (DL_FUNC) &_thinr_lee_cpp, 2},
+    {"_thinr_medial_axis_cpp", (DL_FUNC) &_thinr_medial_axis_cpp, 1},
+    {"_thinr_opta_cpp", (DL_FUNC) &_thinr_opta_cpp, 2},
     {"_thinr_zhang_suen_cpp", (DL_FUNC) &_thinr_zhang_suen_cpp, 2},
     {NULL, NULL, 0}
 };

@@ -6,7 +6,7 @@
 \usage{
 thin(
   image,
-  method = c("zhang_suen", "guo_hall", "lee", "k3m"),
+  method = c("zhang_suen", "guo_hall", "lee", "k3m", "hilditch", "opta", "holt"),
   max_iter = 1000L
 )
 }
@@ -18,9 +18,10 @@ matrix; arrays with more than two dimensions are not yet supported.}
 
 \item{method}{Algorithm to use. One of \code{"zhang_suen"} (default,
 matches \code{EBImage::thinImage}), \code{"guo_hall"}, \code{"lee"} (2-D
-adaptation of Lee, Kashyap & Chu 1994), or \code{"k3m"} (Saeed et al.
-2010). See \code{vignette("choosing-a-method")} for guidance on which to
-pick.}
+adaptation of Lee, Kashyap & Chu 1994), \code{"k3m"} (Saeed et al.
+2010), \code{"hilditch"} (Hilditch 1969), \code{"opta"} (Naccache &
+Shinghal 1984), or \code{"holt"} (Holt et al. 1987).
+See \code{vignette("choosing-a-method")} for guidance on which to pick.}
 
 \item{max_iter}{Maximum number of passes. Default 1000. Real binary
 images of typical sizes converge well under 50 passes; the limit is
@@ -45,5 +46,6 @@ m <- matrix(c(0, 0, 0, 0, 0,
             nrow = 5, byrow = TRUE)
 thin(m, method = "zhang_suen")
 thin(m, method = "guo_hall")
+thin(m, method = "hilditch")
 
 }

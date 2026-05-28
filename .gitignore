@@ -32,3 +32,9 @@ docs/
 /doc/
 /Meta/
 docs
+
+# Reference papers used during development. We don't hold redistribution
+# licenses for these, so PDFs do not go in git. The README that
+# documents the directory's purpose is the only tracked file.
+/references/*
+!/references/README.md
