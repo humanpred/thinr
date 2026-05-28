@@ -9,12 +9,14 @@
 ## Current state
 
 - **Slice:** 0 — Infrastructure
-- **Version:** 0.2.0 (release-prep branch)
-- **Status:** CRAN-prep release. Seven thinning algorithms fully implemented in Rcpp, all verified against original papers (or the Lam-Lee-Suen 1992 survey for Hilditch's parallel form). Medial axis and distance transform shipped as standalone exported utilities. Tests pass; lintr clean; R CMD check --as-cran clean (0/0/2 NOTEs, both expected). GitHub Actions: R-CMD-check (matrix), pkgdown, test-coverage, lint, pr-commands.
+- **Version:** 0.2.0
+- **Status:** CRAN-prep release. Seven thinning algorithms fully implemented in Rcpp, all verified against original papers (or the Lam-Lee-Suen 1992 survey for Hilditch's parallel form). Medial axis and distance transform shipped as standalone exported utilities. PR #1 (`release-prep`) and PR #2 (`coverage-bump`) both merged to `main`. Tests pass; lintr clean; R CMD check --as-cran clean (0/0/2 NOTEs, both expected). GitHub Actions: R-CMD-check (matrix), pkgdown, test-coverage, lint, pr-commands.
 - **Recent shipments:**
-  - Dropped `stentiford` (folk misattribution; the 1983 paper is preprocessing not thinning) and `pavlidis` (current implementation didn't match the contour-following algorithm of the 1980 paper). The dropped algorithms are not implemented in any major image-processing library (scikit-image, OpenCV, MATLAB, ImageJ, mahotas); per the package's "widely used elsewhere" inclusion criterion, removing them keeps the package focused. (2026-05-20)
+  - **R-side coverage to its practical maximum** (2026-05-21, PR #2, `1870e25`) — added tests covering the remaining branches in the `thin()` dispatcher and the storage-restoration helpers.
+  - **release-prep merged** (2026-05-20, PR #1, `98f4a80`) — the CRAN-prep branch (with all reviewer-feedback fixes, the K3M / OPTA / Holt verifications, the Stentiford / Pavlidis drop, and pkgdown reference-index fix) landed on `main`.
+  - Dropped `stentiford` (folk misattribution; the 1983 paper is preprocessing not thinning) and `pavlidis` (the implementation didn't match the contour-following algorithm of the 1980 paper). The dropped algorithms are not implemented in any major image-processing library (scikit-image, OpenCV, MATLAB, ImageJ, mahotas); per the package's "widely used elsewhere" inclusion criterion, removing them keeps the package focused. (2026-05-20)
   - Algorithm verification pass against papers in `references/`: K3M lookup tables corrected against Saeed et al. 2010; OPTA rewritten per survey's safe-point expression; Holt rewritten per the original CACM paper (correcting a survey transcription error in the middle clause). (2026-05-20)
-  - Tier-1 + Tier-2 algorithm expansion: Hilditch, OPTA, Holt; plus medial_axis() and distance_transform(). (2026-05-16)
+  - Tier-1 + Tier-2 algorithm expansion: Hilditch, OPTA, Holt; plus `medial_axis()` and `distance_transform()`. (2026-05-16)
   - CRAN reviewer feedback addressed (function-name quotes + DOIs). (2026-05-16)
   - v0.2.0 stub-replacement: Lee 2-D and K3M fully implemented. (2026-05-16)
   - v0.1.0 skeleton with Rcpp setup, 2 algorithms, vignette, README, NEWS, GitHub Actions CI, pkgdown. (2026-05-16)
