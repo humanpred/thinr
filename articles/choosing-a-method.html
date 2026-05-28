@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Choosing a thinning method • thinr</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Choosing a thinning method">
 </head>
@@ -69,31 +69,51 @@ algorithms <code>thinr</code> provides.</p>
 <h2 id="whats-implemented">What’s implemented<a class="anchor" aria-label="anchor" href="#whats-implemented"></a>
 </h2>
 <table class="table">
+<colgroup>
+<col width="13%">
+<col width="38%">
+<col width="48%">
+</colgroup>
 <thead><tr class="header">
 <th>Method</th>
-<th>Status (v0.2)</th>
 <th>Reference</th>
+<th>Approach</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td><code>zhang_suen</code></td>
-<td>Full</td>
 <td>Zhang &amp; Suen (1984)</td>
+<td>2 sub-iterations, mixed-direction products</td>
 </tr>
 <tr class="even">
 <td><code>guo_hall</code></td>
-<td>Full</td>
 <td>Guo &amp; Hall (1989)</td>
+<td>2 sub-iterations, conditions tuned for diagonals</td>
 </tr>
 <tr class="odd">
 <td><code>lee</code></td>
-<td>Full (2-D)</td>
-<td>Lee, Kashyap &amp; Chu (1994)</td>
+<td>Lee, Kashyap &amp; Chu (1994), 2-D</td>
+<td>4 directional sub-iterations + Euler-invariance</td>
 </tr>
 <tr class="even">
 <td><code>k3m</code></td>
-<td>Full</td>
 <td>Saeed et al. (2010)</td>
+<td>6 phases of progressively permissive removal</td>
+</tr>
+<tr class="odd">
+<td><code>hilditch</code></td>
+<td>parallel form (Rutovitz-style)</td>
+<td>Single pass with look-ahead crossing-number check</td>
+</tr>
+<tr class="even">
+<td><code>opta</code></td>
+<td>Naccache &amp; Shinghal (1984)</td>
+<td>Safe-point thinning (SPTA)</td>
+</tr>
+<tr class="odd">
+<td><code>holt</code></td>
+<td>Holt, Stewart, Clint &amp; Perrott (1987)</td>
+<td>One subcycle with edge information on neighbours</td>
 </tr>
 </tbody>
 </table>
@@ -103,10 +123,18 @@ wrapper is provided as a drop-in replacement.</p>
 <p><code>lee</code> is a 2-D adaptation of Lee’s original 3-D algorithm.
 The 3-D case (volumetric thinning) is not implemented in this
 release.</p>
-<p>The K3M lookup tables in this implementation are reconstructed from
-the algorithm’s published description; they produce topology-preserving,
-one-pixel-wide skeletons on the test corpus. Verification against the
-paper’s exact tables is welcomed.</p>
+<p>The <code>hilditch</code> method implements the <em>parallel
+form</em> commonly cited as “Hilditch” in modern image-processing
+surveys; Hilditch’s 1969 paper actually describes a sequential algorithm
+with within-pass deletion tracking and a different crossing-number
+definition. See Lam, Lee &amp; Suen (1992) for the relationship between
+the two.</p>
+<p>The K3M lookup tables <code>A_0 … A_5</code> are reproduced from
+Saeed et al. (2010), Section 3.3, page 327. OPTA’s safe-point boolean
+expression and Holt’s condition <code>H</code> are taken from the
+original papers; the Lam-Lee-Suen 1992 survey was used as
+cross-reference and one transcription error in Holt’s middle clause
+(north vs east) was corrected against the original.</p>
 </div>
 <div class="section level2">
 <h2 id="a-quick-visual-comparison">A quick visual comparison<a class="anchor" aria-label="anchor" href="#a-quick-visual-comparison"></a>
@@ -166,7 +194,7 @@ paper’s exact tables is welcomed.</p>
 <span><span class="co">#&gt; [10,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt; [11,]    0    0    0    0    0    0    0    0    0     0     0</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">v</span>, method <span class="op">=</span> <span class="st">"lee"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">v</span>, method <span class="op">=</span> <span class="st">"hilditch"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]</span></span>
 <span><span class="co">#&gt;  [1,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
@@ -186,6 +214,20 @@ paper’s exact tables is welcomed.</p>
 <span><span class="co">#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [3,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [4,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [5,]    0    0    0    0    1    0    1    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [6,]    0    0    0    0    1    0    1    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [7,]    0    0    0    0    1    1    1    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [8,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt; [10,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt; [11,]    0    0    0    0    0    0    0    0    0     0     0</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">v</span>, method <span class="op">=</span> <span class="st">"holt"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]</span></span>
+<span><span class="co">#&gt;  [1,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [3,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [4,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [5,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [6,]    0    0    0    0    1    1    1    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [7,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
@@ -193,11 +235,24 @@ paper’s exact tables is welcomed.</p>
 <span><span class="co">#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt; [10,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt; [11,]    0    0    0    0    0    0    0    0    0     0     0</span></span></code></pre></div>
-<p>All four algorithms produce one-pixel-wide skeletons that follow the
-diagonals. Differences show up at corners and small protrusions:
-Guo-Hall and K3M tend to preserve corners marginally better than
-Zhang-Suen; Lee tends toward thinner skeletons because its four
-directional sub-iterations process boundaries more aggressively.</p>
+<p>The thinning algorithms produce broadly similar skeletons on this V —
+they all collapse the two diagonal strokes to single lines and meet at
+the bottom. Differences show up on more complex shapes:</p>
+<ul>
+<li>
+<code>zhang_suen</code> is the most aggressive on simple
+shapes.</li>
+<li>
+<code>guo_hall</code> and <code>k3m</code> preserve corners
+marginally better.</li>
+<li>
+<code>hilditch</code> has the look-ahead crossing-number check,
+which gives different connectivity properties at junctions.</li>
+<li>
+<code>holt</code> uses edge information about neighbouring pixels
+rather than a crossing-number check on the central pixel; it is
+specifically designed to preserve 2-pixel-wide lines.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="when-to-use-which">When to use which<a class="anchor" aria-label="anchor" href="#when-to-use-which"></a>
@@ -211,70 +266,208 @@ compatibility with code that previously used
 <li>
 <strong><code>guo_hall</code></strong> — try this if your skeletons
 have lots of diagonal features and Zhang-Suen is breaking them at
-corners. Slightly different topology preservation behavior.</li>
+corners.</li>
 <li>
 <strong><code>lee</code></strong> — when you want directional
 processing (four sub-iterations per pass, one per cardinal direction).
-Sometimes produces cleaner skeletons on asymmetric inputs than
-Zhang-Suen’s two-subiteration approach.</li>
+Sometimes produces cleaner skeletons on asymmetric inputs.</li>
 <li>
 <strong><code>k3m</code></strong> — strongest corner preservation in
 published comparative studies, at the cost of being slower (six phases
 per outer iteration vs. two for Zhang-Suen).</li>
+<li>
+<strong><code>hilditch</code></strong> — well-cited historical
+algorithm; the look-ahead crossing-number check makes its connectivity
+slightly different from the other parallel algorithms.</li>
+<li>
+<strong><code>opta</code></strong> — one-pass safe-point algorithm.
+Its <code>N2</code> condition protects two-4-adjacent-pixel diagonal
+patterns, which can leave stray pixels at bar corners (a documented
+property of SPTA).</li>
+<li>
+<strong><code>holt</code></strong> — when 2-pixel-wide lines should
+be preserved. The algorithm uses edge information from neighbouring
+pixels in a 5x5 window, allowing a single subcycle.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="medial-axis-transform">Medial axis transform<a class="anchor" aria-label="anchor" href="#medial-axis-transform"></a>
+</h2>
+<p>The thinning algorithms above all produce binary 1-pixel-wide
+skeletons without width information. For tasks where local thickness
+matters, use <code><a href="../reference/medial_axis.html">medial_axis()</a></code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">9</span>, <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="va">m</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">7</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">9</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span>      <span class="co"># 5x7 solid rectangle</span></span>
+<span><span class="fu"><a href="../reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]</span></span>
+<span><span class="co">#&gt;  [1,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [3,]    0    0    1    1    0    0    0    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [4,]    0    0    1    1    1    0    1    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [5,]    0    0    0    1    1    1    1    1    0     0     0</span></span>
+<span><span class="co">#&gt;  [6,]    0    0    1    1    1    0    1    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [7,]    0    0    1    1    0    0    0    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [8,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0     0</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span>, return_distance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">result</span><span class="op">$</span><span class="va">skeleton</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]</span></span>
+<span><span class="co">#&gt;  [1,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [3,]    0    0    1    1    0    0    0    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [4,]    0    0    1    1    1    0    1    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [5,]    0    0    0    1    1    1    1    1    0     0     0</span></span>
+<span><span class="co">#&gt;  [6,]    0    0    1    1    1    0    1    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [7,]    0    0    1    1    0    0    0    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [8,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">distance</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]</span></span>
+<span><span class="co">#&gt;  [1,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [3,]    0    0    1    1    1    1    1    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [4,]    0    0    1    2    2    2    2    2    1     0     0</span></span>
+<span><span class="co">#&gt;  [5,]    0    0    1    2    3    3    3    2    1     0     0</span></span>
+<span><span class="co">#&gt;  [6,]    0    0    1    2    2    2    2    2    1     0     0</span></span>
+<span><span class="co">#&gt;  [7,]    0    0    1    1    1    1    1    1    1     0     0</span></span>
+<span><span class="co">#&gt;  [8,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
+<span><span class="co">#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0     0</span></span></code></pre></div>
+<p>The distance is the Euclidean distance from each foreground pixel to
+the nearest background pixel.</p>
+</div>
+<div class="section level2">
+<h2 id="distance-transform">Distance transform<a class="anchor" aria-label="anchor" href="#distance-transform"></a>
+</h2>
+<p><code><a href="../reference/distance_transform.html">distance_transform()</a></code> exposes the distance transform
+itself as a stand-alone utility, with a choice of metric:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">m</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
+<span><span class="fu"><a href="../reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"manhattan"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      [,1] [,2] [,3] [,4] [,5]</span></span>
+<span><span class="co">#&gt; [1,]    0    1    2    3    4</span></span>
+<span><span class="co">#&gt; [2,]    1    2    3    4    5</span></span>
+<span><span class="co">#&gt; [3,]    2    3    4    5    6</span></span>
+<span><span class="co">#&gt; [4,]    3    4    5    6    7</span></span>
+<span><span class="co">#&gt; [5,]    4    5    6    7    8</span></span>
+<span><span class="fu"><a href="../reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"chessboard"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      [,1] [,2] [,3] [,4] [,5]</span></span>
+<span><span class="co">#&gt; [1,]    0    1    2    3    4</span></span>
+<span><span class="co">#&gt; [2,]    1    1    2    3    4</span></span>
+<span><span class="co">#&gt; [3,]    2    2    2    3    4</span></span>
+<span><span class="co">#&gt; [4,]    3    3    3    3    4</span></span>
+<span><span class="co">#&gt; [5,]    4    4    4    4    4</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"euclidean"</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      [,1]  [,2]  [,3]  [,4]  [,5]</span></span>
+<span><span class="co">#&gt; [1,]    0 1.000 2.000 3.000 4.000</span></span>
+<span><span class="co">#&gt; [2,]    1 1.414 2.236 3.162 4.123</span></span>
+<span><span class="co">#&gt; [3,]    2 2.236 2.828 3.606 4.472</span></span>
+<span><span class="co">#&gt; [4,]    3 3.162 3.606 4.243 5.000</span></span>
+<span><span class="co">#&gt; [5,]    4 4.123 4.472 5.000 5.657</span></span></code></pre></div>
+<p>The Euclidean implementation uses the linear-time separable algorithm
+of Felzenszwalb and Huttenlocher (2012); the others use the classical
+Rosenfeld and Pfaltz (1968) two-pass sweep.</p>
 </div>
 <div class="section level2">
 <h2 id="inputs-and-outputs">Inputs and outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs"></a>
 </h2>
-<p><code><a href="../reference/thin.html">thin()</a></code> accepts logical, integer, and numeric matrices.
+<p><code><a href="../reference/thin.html">thin()</a></code>, <code><a href="../reference/medial_axis.html">medial_axis()</a></code>, and
+<code><a href="../reference/thinImage.html">thinImage()</a></code> accept logical, integer, and numeric matrices.
 Non-zero values are foreground. The return matrix matches the storage
 mode of the input — logical in, logical out; integer in, integer out;
 numeric in, numeric out.</p>
-<p>Higher-dimensional arrays (e.g. 3-D volumes) are not yet supported.
-The Lee algorithm in v0.2 will add 3-D support.</p>
+<p><code><a href="../reference/distance_transform.html">distance_transform()</a></code> always returns a numeric
+matrix.</p>
+<p>Higher-dimensional arrays (e.g. 3-D volumes) are not yet
+supported.</p>
 </div>
 <div class="section level2">
 <h2 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
 </h2>
 <p>A simple <code><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">bench::mark()</a></code> comparison on a moderate image
-(illustrative — see <code>tests/testthat/test-thin.R</code> for the test
-corpus that is the basis for the benchmark report committed alongside
-this release):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+(illustrative):</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bench.r-lib.org/" class="external-link">bench</a></span><span class="op">)</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">200</span>, <span class="fl">200</span><span class="op">)</span></span>
 <span><span class="va">m</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">150</span>, <span class="fl">50</span><span class="op">:</span><span class="fl">150</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span>  <span class="co"># solid square</span></span>
 <span></span>
 <span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
-<span>  zs <span class="op">=</span> <span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"zhang_suen"</span><span class="op">)</span>,</span>
-<span>  gh <span class="op">=</span> <span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"guo_hall"</span><span class="op">)</span>,</span>
+<span>  zs       <span class="op">=</span> <span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"zhang_suen"</span><span class="op">)</span>,</span>
+<span>  gh       <span class="op">=</span> <span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"guo_hall"</span><span class="op">)</span>,</span>
+<span>  hild     <span class="op">=</span> <span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"hilditch"</span><span class="op">)</span>,</span>
+<span>  k3m      <span class="op">=</span> <span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"k3m"</span><span class="op">)</span>,</span>
+<span>  ma       <span class="op">=</span> <span class="fu"><a href="../reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>,</span>
+<span>  dt_eucl  <span class="op">=</span> <span class="fu"><a href="../reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"euclidean"</span><span class="op">)</span>,</span>
 <span>  iterations <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  check <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>All four algorithms are O(iterations × pixels). Constant factors
-increase roughly: <code>zhang_suen</code> &lt; <code>guo_hall</code>
-&lt; <code>lee</code> &lt; <code>k3m</code>. For 200×200 images all four
-finish in a few milliseconds on modern hardware.</p>
+<p>All thinning algorithms are <code>O(iterations × pixels)</code>.
+Constant factors are smallest for <code>zhang_suen</code> and
+<code>guo_hall</code>; <code>holt</code> and <code>k3m</code> are the
+most expensive because of their look-aheads. The Euclidean distance
+transform is <code>O(pixels)</code> via Felzenszwalb-Huttenlocher;
+medial axis is <code>O(pixels)</code> since it just adds a single linear
+pass over the DT.</p>
+<p>For 200×200 images all algorithms finish in a few milliseconds on
+modern hardware.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
+<div class="section level3">
+<h3 id="thinning">Thinning<a class="anchor" aria-label="anchor" href="#thinning"></a>
+</h3>
 <ul>
 <li>Zhang, T. Y. &amp; Suen, C. Y. (1984). A fast parallel algorithm for
 thinning digital patterns. <em>Communications of the ACM</em>, 27(3),
-236–239.</li>
+236–239. </li>
 <li>Guo, Z. &amp; Hall, R. W. (1989). Parallel thinning with
 two-subiteration algorithms. <em>Communications of the ACM</em>, 32(3),
-359–373.</li>
+359–373. </li>
 <li>Lee, T.-C., Kashyap, R. L., &amp; Chu, C.-N. (1994). Building
 skeleton models via 3-D medial surface axis thinning algorithms.
-<em>CVGIP: Graphical Models and Image Processing</em>, 56(6),
-462–478.</li>
+<em>CVGIP: Graphical Models and Image Processing</em>, 56(6), 462–478.
+</li>
 <li>Saeed, K., Tabędzki, M., Rybnik, M., &amp; Adamski, M. (2010). K3M:
 A universal algorithm for image skeletonization and a review of thinning
 techniques. <em>International Journal of Applied Mathematics and
-Computer Science</em>, 20(2), 317–335.</li>
+Computer Science</em>, 20(2), 317–335. </li>
+<li>Hilditch, C. J. (1969). Linear skeletons from square cupboards. In
+B. Meltzer &amp; D. Michie (Eds.), <em>Machine Intelligence 4</em>
+(pp. 403–420). Edinburgh University Press.</li>
+<li>Naccache, N. J. &amp; Shinghal, R. (1984). An investigation into the
+skeletonization approach of Hilditch. <em>Pattern Recognition</em>,
+17(3), 279–284.</li>
+<li>Holt, C. M., Stewart, A., Clint, M., &amp; Perrott, R. H. (1987). An
+improved parallel thinning algorithm. <em>Communications of the
+ACM</em>, 30(2), 156–160. </li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="survey">Survey<a class="anchor" aria-label="anchor" href="#survey"></a>
+</h3>
+<ul>
+<li>Lam, L., Lee, S.-W., &amp; Suen, C. Y. (1992). Thinning
+methodologies — a comprehensive survey. <em>IEEE Transactions on Pattern
+Analysis and Machine Intelligence</em>, 14(9), 869–885. </li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="medial-axis-and-distance-transform">Medial axis and distance transform<a class="anchor" aria-label="anchor" href="#medial-axis-and-distance-transform"></a>
+</h3>
+<ul>
+<li>Blum, H. (1967). A transformation for extracting new descriptors of
+shape. In <em>Models for the Perception of Speech and Visual Form</em>
+(pp. 362–380). MIT Press.</li>
+<li>Felzenszwalb, P. F. &amp; Huttenlocher, D. P. (2012). Distance
+transforms of sampled functions. <em>Theory of Computing</em>, 8(19),
+415–428. </li>
+<li>Rosenfeld, A. &amp; Pfaltz, J. L. (1968). Distance functions on
+digital pictures. <em>Pattern Recognition</em>, 1(1), 33–61. </li>
+</ul>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -7,12 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Binary Image Thinning Algorithms • thinr</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Binary Image Thinning Algorithms">
-<meta name="description" content="Thinning (skeletonization) algorithms for binary raster images. Provides four algorithms behind a single dispatching function: Zhang-Suen, Guo-Hall, a 2-D adaptation of Lee, and K3M. The drop-in thinImage() matches the signature of EBImage::thinImage() so existing code can switch parsers without changes. The wider thin() API selects the algorithm by name.">
-<meta property="og:description" content="Thinning (skeletonization) algorithms for binary raster images. Provides four algorithms behind a single dispatching function: Zhang-Suen, Guo-Hall, a 2-D adaptation of Lee, and K3M. The drop-in thinImage() matches the signature of EBImage::thinImage() so existing code can switch parsers without changes. The wider thin() API selects the algorithm by name.">
+<meta name="description" content="Thinning (skeletonization) algorithms for binary raster images. Provides seven algorithms behind a single dispatching function: Zhang-Suen (Zhang and Suen 1984) &lt;doi:10.1145/357994.358023&gt;, Guo-Hall (Guo and Hall 1989) &lt;doi:10.1145/62065.62074&gt;, a 2-D adaptation of Lee (Lee, Kashyap, and Chu 1994) &lt;doi:10.1006/cgip.1994.1042&gt;, K3M (Saeed, Tabedzki, Rybnik, and Adamski 2010) &lt;doi:10.2478/v10006-010-0024-4&gt;, the parallel form commonly attributed to Hilditch (1969, in Machine Intelligence 4), OPTA / SPTA (Naccache and Shinghal 1984), and Holt and colleagues (1987) &lt;doi:10.1145/12527.12531&gt;. Also provides the medial axis transform (Blum 1967) and a distance transform implementation following Felzenszwalb and Huttenlocher (2012) &lt;doi:10.4086/toc.2012.v008a019&gt;. The drop-in thinImage() matches the signature of thinImage() in the EBImage package on Bioconductor so existing code can switch parsers without changes. The wider thin() API selects the algorithm by name.">
+<meta property="og:description" content="Thinning (skeletonization) algorithms for binary raster images. Provides seven algorithms behind a single dispatching function: Zhang-Suen (Zhang and Suen 1984) &lt;doi:10.1145/357994.358023&gt;, Guo-Hall (Guo and Hall 1989) &lt;doi:10.1145/62065.62074&gt;, a 2-D adaptation of Lee (Lee, Kashyap, and Chu 1994) &lt;doi:10.1006/cgip.1994.1042&gt;, K3M (Saeed, Tabedzki, Rybnik, and Adamski 2010) &lt;doi:10.2478/v10006-010-0024-4&gt;, the parallel form commonly attributed to Hilditch (1969, in Machine Intelligence 4), OPTA / SPTA (Naccache and Shinghal 1984), and Holt and colleagues (1987) &lt;doi:10.1145/12527.12531&gt;. Also provides the medial axis transform (Blum 1967) and a distance transform implementation following Felzenszwalb and Huttenlocher (2012) &lt;doi:10.4086/toc.2012.v008a019&gt;. The drop-in thinImage() matches the signature of thinImage() in the EBImage package on Bioconductor so existing code can switch parsers without changes. The wider thin() API selects the algorithm by name.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -52,7 +52,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>Binary image thinning (skeletonization) algorithms for R. Designed as a drop-in replacement for <code>EBImage::thinImage()</code> with additional algorithms behind a single dispatching function.</p>
+<p>Binary image thinning (skeletonization) algorithms for R, plus the medial axis transform and a fast Euclidean / Manhattan / Chessboard distance transform. Designed as a drop-in replacement for <code>EBImage::thinImage()</code> with six additional thinning algorithms behind a single dispatching function.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -78,48 +78,88 @@
 <span></span>
 <span><span class="co"># Or pick an algorithm explicitly</span></span>
 <span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"guo_hall"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"hilditch"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"holt"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Drop-in for EBImage::thinImage()</span></span>
-<span><span class="fu"><a href="reference/thinImage.html">thinImage</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/thinImage.html">thinImage</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Medial axis transform (returns binary skeleton + per-pixel width)</span></span>
+<span><span class="fu"><a href="reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span>, return_distance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Distance transform as a standalone utility</span></span>
+<span><span class="fu"><a href="reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"euclidean"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"manhattan"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"chessboard"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="algorithms">Algorithms<a class="anchor" aria-label="anchor" href="#algorithms"></a>
 </h2>
 <table class="table">
 <colgroup>
-<col width="38%">
-<col width="43%">
-<col width="17%">
+<col width="57%">
+<col width="42%">
 </colgroup>
 <thead><tr>
 <th>Method</th>
-<th>Status (v0.2)</th>
-<th>Notes</th>
+<th>Reference</th>
 </tr></thead>
 <tbody>
 <tr>
 <td><code>zhang_suen</code></td>
-<td>Full</td>
-<td>Default; matches <code>EBImage::thinImage()</code>.</td>
+<td>Zhang, T. Y. &amp; Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. <em>Communications of the ACM</em>, 27(3), 236–239. <a href="https://doi.org/10.1145/357994.358023" class="external-link">doi:10.1145/357994.358023</a>. <em>Default; matches <code>EBImage::thinImage()</code>.</em>
+</td>
 </tr>
 <tr>
 <td><code>guo_hall</code></td>
-<td>Full</td>
-<td>Slightly better diagonal-corner preservation.</td>
+<td>Guo, Z. &amp; Hall, R. W. (1989). Parallel thinning with two-subiteration algorithms. <em>Communications of the ACM</em>, 32(3), 359–373. <a href="https://doi.org/10.1145/62065.62074" class="external-link">doi:10.1145/62065.62074</a>.</td>
 </tr>
 <tr>
 <td><code>lee</code></td>
-<td>Full (2-D)</td>
-<td>Four directional sub-iterations; crossing-number Euler-invariance.</td>
+<td>Lee, T.-C., Kashyap, R. L. &amp; Chu, C.-N. (1994). Building skeleton models via 3-D medial surface axis thinning algorithms. <em>CVGIP: Graphical Models and Image Processing</em>, 56(6), 462–478. <a href="https://doi.org/10.1006/cgip.1994.1042" class="external-link">doi:10.1006/cgip.1994.1042</a>. 2-D adaptation; the 3-D form is not implemented.</td>
 </tr>
 <tr>
 <td><code>k3m</code></td>
-<td>Full</td>
-<td>Six-phase lookup-table thinning; strongest corner preservation.</td>
+<td>Saeed, K., Tabędzki, M., Rybnik, M. &amp; Adamski, M. (2010). K3M: A universal algorithm for image skeletonization and a review of thinning techniques. <em>International Journal of Applied Mathematics and Computer Science</em>, 20(2), 317–335. <a href="https://doi.org/10.2478/v10006-010-0024-4" class="external-link">doi:10.2478/v10006-010-0024-4</a>. Lookup tables <code>A_0…A_5</code> reproduced from the paper.</td>
+</tr>
+<tr>
+<td><code>hilditch</code></td>
+<td>Parallel form commonly attributed to Hilditch. The original algorithm is Hilditch, C. J. (1969). Linear skeletons from square cupboards. In B. Meltzer &amp; D. Michie (Eds.), <em>Machine Intelligence 4</em> (pp. 403–420). Edinburgh University Press. The parallel form here uses Rutovitz-style <code>R1</code>–<code>R4</code> conditions; see Lam, Lee &amp; Suen (1992) for the precise differences.</td>
+</tr>
+<tr>
+<td><code>opta</code></td>
+<td>Naccache, N. J. &amp; Shinghal, R. (1984). An investigation into the skeletonization approach of Hilditch. <em>Pattern Recognition</em>, 17(3), 279–284. Also called the Safe Point Thinning Algorithm (SPTA).</td>
+</tr>
+<tr>
+<td><code>holt</code></td>
+<td>Holt, C. M., Stewart, A., Clint, M. &amp; Perrott, R. H. (1987). An improved parallel thinning algorithm. <em>Communications of the ACM</em>, 30(2), 156–160. <a href="https://doi.org/10.1145/12527.12531" class="external-link">doi:10.1145/12527.12531</a>. One-subcycle, uses edge information about neighbours.</td>
 </tr>
 </tbody>
 </table>
-<p>See <code><a href="articles/choosing-a-method.html">vignette("choosing-a-method")</a></code> for guidance.</p>
+<p>Plus:</p>
+<table class="table">
+<colgroup>
+<col width="68%">
+<col width="31%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Reference</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/medial_axis.html">medial_axis()</a></code></td>
+<td>Blum, H. (1967). A transformation for extracting new descriptors of shape. In <em>Models for the Perception of Speech and Visual Form</em> (pp. 362–380). MIT Press. Implementation finds ridge points of the squared Euclidean distance transform; returns the binary skeleton, optionally with per-pixel distance.</td>
+</tr>
+<tr>
+<td><code><a href="reference/distance_transform.html">distance_transform()</a></code></td>
+<td>Felzenszwalb, P. F. &amp; Huttenlocher, D. P. (2012). Distance transforms of sampled functions. <em>Theory of Computing</em>, 8(19), 415–428. <a href="https://doi.org/10.4086/toc.2012.v008a019" class="external-link">doi:10.4086/toc.2012.v008a019</a>. Linear-time separable squared Euclidean transform; plus the Rosenfeld &amp; Pfaltz (1968) two-pass forward + backward sweep for <code>metric = "manhattan"</code> and <code>"chessboard"</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The survey by Lam, L., Lee, S.-W. &amp; Suen, C. Y. (1992), “Thinning methodologies — a comprehensive survey”, <em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>, 14(9), 869–885, <a href="https://doi.org/10.1109/34.161346" class="external-link">doi:10.1109/34.161346</a>, was used as the cross-reference for the parallel-form Hilditch and for verifying OPTA’s safe-point boolean expression.</p>
+<p>See <code><a href="articles/choosing-a-method.html">vignette("choosing-a-method")</a></code> for guidance on choosing among the methods.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
@@ -130,6 +170,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=thinr" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/humanpred/thinr/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/humanpred/thinr/issues" class="external-link">Report a bug</a></li>
 </ul>

@@ -8,7 +8,7 @@ supported thinning algorithms.
 ``` r
 thin(
   image,
-  method = c("zhang_suen", "guo_hall", "lee", "k3m"),
+  method = c("zhang_suen", "guo_hall", "lee", "k3m", "hilditch", "opta", "holt"),
   max_iter = 1000L
 )
 ```
@@ -26,7 +26,9 @@ thin(
 
   Algorithm to use. One of `"zhang_suen"` (default, matches
   `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D adaptation of Lee,
-  Kashyap & Chu 1994), or `"k3m"` (Saeed et al. 2010). See
+  Kashyap & Chu 1994), `"k3m"` (Saeed et al. 2010), `"hilditch"`
+  (Hilditch 1969), `"opta"` (Naccache & Shinghal 1984), or `"holt"`
+  (Holt et al. 1987). See
   [`vignette("choosing-a-method")`](https://humanpred.github.io/thinr/articles/choosing-a-method.md)
   for guidance on which to pick.
 
@@ -59,6 +61,13 @@ thin(m, method = "zhang_suen")
 #> [4,]    0    0    0    0    0
 #> [5,]    0    0    0    0    0
 thin(m, method = "guo_hall")
+#>      [,1] [,2] [,3] [,4] [,5]
+#> [1,]    0    0    0    0    0
+#> [2,]    0    0    0    0    0
+#> [3,]    0    0    1    0    0
+#> [4,]    0    0    0    0    0
+#> [5,]    0    0    0    0    0
+thin(m, method = "hilditch")
 #>      [,1] [,2] [,3] [,4] [,5]
 #> [1,]    0    0    0    0    0
 #> [2,]    0    0    0    0    0
