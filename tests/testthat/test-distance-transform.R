@@ -62,6 +62,28 @@ describe("distance_transform: euclidean distance", {
   })
 })
 
+describe("distance_transform: exact full-matrix values from a corner", {
+  # A 4x4 all-foreground image with a single background pixel at (1, 1).
+  # Pin every cell of every metric, not just a handful.
+  img <- matrix(1L, nrow = 4, ncol = 4)
+  img[1, 1] <- 0L
+
+  it("manhattan: every cell equals (r-1) + (c-1)", {
+    expected <- outer(0:3, 0:3, `+`)
+    expect_equal(distance_transform(img, metric = "manhattan"), expected)
+  })
+
+  it("chessboard: every cell equals max(r-1, c-1)", {
+    expected <- outer(0:3, 0:3, pmax)
+    expect_equal(distance_transform(img, metric = "chessboard"), expected)
+  })
+
+  it("euclidean: every cell equals sqrt((r-1)^2 + (c-1)^2)", {
+    expected <- outer(0:3, 0:3, function(a, b) sqrt(a^2 + b^2))
+    expect_equal(distance_transform(img, metric = "euclidean"), expected)
+  })
+})
+
 describe("distance_transform: all-background image returns zeros", {
   for (metric in c("euclidean", "manhattan", "chessboard")) {
     local({

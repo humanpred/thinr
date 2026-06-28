@@ -50,6 +50,31 @@ describe("medial_axis: return_distance returns skeleton + distance", {
   })
 })
 
+describe("medial_axis: exact skeleton and distance on a known rectangle", {
+  # The 7x9 solid 3x5 rectangle from the roxygen example. Pins the exact
+  # ridge pattern and the per-pixel distance values, not just a subset.
+  img <- matrix(0L, nrow = 7, ncol = 9)
+  img[3:5, 3:7] <- 1L
+
+  it("returns the documented skeleton pattern", {
+    expected <- matrix(0L, nrow = 7, ncol = 9)
+    expected[3, 3:4] <- 1L
+    expected[3, 6:7] <- 1L
+    expected[4, 3:7] <- 1L
+    expected[5, 3:4] <- 1L
+    expected[5, 6:7] <- 1L
+    expect_identical(medial_axis(img), expected)
+  })
+
+  it("returns the exact Euclidean distance map", {
+    expected <- matrix(0, nrow = 7, ncol = 9)
+    expected[3, 3:7] <- 1
+    expected[4, 3:7] <- c(1, 2, 2, 2, 1)
+    expected[5, 3:7] <- 1
+    expect_equal(medial_axis(img, return_distance = TRUE)$distance, expected)
+  })
+})
+
 describe("medial_axis: storage mode of output skeleton matches input", {
   it("logical in, logical out", {
     img <- matrix(FALSE, nrow = 5, ncol = 5)

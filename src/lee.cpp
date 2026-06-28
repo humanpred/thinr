@@ -39,7 +39,10 @@ static inline int lee_can_delete(int p2, int p3, int p4, int p5,
     case 1:  on_boundary = (p4 == 0); break;  // east
     case 2:  on_boundary = (p6 == 0); break;  // south
     case 3:  on_boundary = (p8 == 0); break;  // west
-    default: on_boundary = 0;
+    // Defensive default: `sub` is driven only by the internal
+    // `for (int sub = 0; sub < 4; sub++)` loop below, so values
+    // outside 0-3 never reach here. Not exercisable from R.
+    default: on_boundary = 0;  // # nocov
   }
   if (!on_boundary) return 0;
 

@@ -74,7 +74,14 @@ as_binary_matrix <- function(image) {
          storage.mode(image), "'.")
   }
   if (is.array(image) && length(dim(image)) == 2L) {
+    # nocov start
+    # Unreachable invariant guard: in R (>= 4.2) every object with a
+    # length-2 `dim` attribute also satisfies is.matrix(), so any 2-D
+    # array is already handled by the is.matrix() branch above. Kept as
+    # a defensive recursion target in case base R's array/matrix
+    # semantics ever diverge.
     return(as_binary_matrix(matrix(image, nrow = dim(image)[1], ncol = dim(image)[2])))
+    # nocov end
   }
   stop("thinr::thin() expects a 2-D matrix. ",
        "Higher-dimensional arrays are not yet supported.")
