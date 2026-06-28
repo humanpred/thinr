@@ -75,12 +75,15 @@ as_binary_matrix <- function(image) {
   }
   if (is.array(image) && length(dim(image)) == 2L) {
     # nocov start
-    # Unreachable invariant guard: in R (>= 4.2) every object with a
-    # length-2 `dim` attribute also satisfies is.matrix(), so any 2-D
-    # array is already handled by the is.matrix() branch above. Kept as
-    # a defensive recursion target in case base R's array/matrix
-    # semantics ever diverge.
-    return(as_binary_matrix(matrix(image, nrow = dim(image)[1], ncol = dim(image)[2])))
+    # Fail-fast assertion (unreachable): the package requires R (>= 4.2),
+    # where every object carrying a length-2 `dim` attribute also satisfies
+    # is.matrix() -- so any 2-D array is already handled by the is.matrix()
+    # branch above and control cannot arrive here. If it ever does, base R's
+    # array/matrix invariant has changed underneath us; raise loudly rather
+    # than silently recursing so the broken assumption is caught, not masked.
+    stop("thinr internal invariant violated: a length-2 `dim` object ",
+         "reached the array branch without satisfying is.matrix(). ",
+         "This contradicts base R (>= 4.2) array/matrix semantics.")
     # nocov end
   }
   stop("thinr::thin() expects a 2-D matrix. ",
