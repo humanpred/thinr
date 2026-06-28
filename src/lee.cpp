@@ -39,7 +39,12 @@ static inline int lee_can_delete(int p2, int p3, int p4, int p5,
     case 1:  on_boundary = (p4 == 0); break;  // east
     case 2:  on_boundary = (p6 == 0); break;  // south
     case 3:  on_boundary = (p8 == 0); break;  // west
-    default: on_boundary = 0;
+    // Fail-fast assertion (unreachable): `sub` is driven only by the
+    // internal `for (int sub = 0; sub < 4; sub++)` loop below, so values
+    // outside 0-3 cannot reach here. If one ever does, the caller's loop
+    // bound has been corrupted; abort loudly rather than silently treating
+    // the pixel as interior so the broken invariant is caught, not masked.
+    default: Rcpp::stop("thinr internal invariant: lee sub-iteration index out of range (expected 0-3) in lee_can_delete().");  // # nocov
   }
   if (!on_boundary) return 0;
 

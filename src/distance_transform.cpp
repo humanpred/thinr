@@ -232,7 +232,10 @@ NumericMatrix distance_transform_cpp(IntegerMatrix img, int metric) {
     case 0:  return dt_euclidean(img);
     case 1:  return dt_manhattan(img);
     case 2:  return dt_chessboard(img);
-    default: Rcpp::stop("Unknown metric code passed to distance_transform_cpp.");
+    // Defensive default: the R wrapper distance_transform() validates
+    // `metric` with match.arg() and maps it to codes 0/1/2 only, so an
+    // out-of-range code never reaches here. Not exercisable from R.
+    default: Rcpp::stop("Unknown metric code passed to distance_transform_cpp.");  // # nocov
   }
   return NumericMatrix(0, 0);  // unreachable
 }

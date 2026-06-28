@@ -369,6 +369,38 @@ describe("complex shapes do not crash and yield smaller skeletons", {
   }
 })
 
+describe("exact skeletons on small known shapes", {
+  # The property tests above bound the skeleton size; these pin the
+  # exact pixel pattern so a change in any algorithm's output is caught.
+  it("zhang_suen collapses a 3x3 solid block to its single centre pixel", {
+    img <- matrix(0L, nrow = 5, ncol = 5)
+    img[2:4, 2:4] <- 1L
+    expected <- matrix(0L, nrow = 5, ncol = 5)
+    expected[3, 3] <- 1L
+    expect_identical(thin(img, method = "zhang_suen"), expected)
+  })
+
+  it("guo_hall collapses a 3x3 solid block to its single centre pixel", {
+    img <- matrix(0L, nrow = 5, ncol = 5)
+    img[2:4, 2:4] <- 1L
+    expected <- matrix(0L, nrow = 5, ncol = 5)
+    expected[3, 3] <- 1L
+    expect_identical(thin(img, method = "guo_hall"), expected)
+  })
+
+  it("thinImage matches its documented 3x5 example output exactly", {
+    img <- matrix(c(0, 1, 1, 1, 0,
+                    0, 1, 1, 1, 0,
+                    0, 1, 1, 1, 0),
+                  nrow = 3, byrow = TRUE)
+    expected <- matrix(c(0, 1, 1, 1, 0,
+                         0, 0, 1, 0, 0,
+                         0, 1, 1, 1, 0),
+                       nrow = 3, byrow = TRUE)
+    expect_identical(thinImage(img), expected)
+  })
+})
+
 describe("thinImage drop-in", {
   it("accepts a logical matrix", {
     img <- matrix(FALSE, nrow = 5, ncol = 5)
