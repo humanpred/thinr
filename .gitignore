@@ -39,3 +39,4 @@ docs
 # documents the directory's purpose is the only tracked file.
 /references/*
 !/references/README.md
+.Rlibs/
