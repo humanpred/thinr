@@ -68,6 +68,59 @@ describe("as_binary_matrix: array input dispatches through the matrix path", {
   })
 })
 
+describe("as_binary_matrix: NA values are rejected in every storage mode", {
+  # NA_integer_ is INT_MIN once it reaches the C++ kernels, where it
+  # silently corrupts neighbour sums far from the NA cell; reject NAs
+  # loudly before dispatch instead.
+  it("numeric NA errors with the documented message", {
+    expect_error(
+      thinr:::as_binary_matrix(matrix(c(NA, 1, 0, 1), nrow = 2)),
+      "thinr does not accept NA values",
+      fixed = TRUE
+    )
+  })
+
+  it("logical NA errors with the documented message", {
+    expect_error(
+      thinr:::as_binary_matrix(matrix(c(NA, TRUE, FALSE, TRUE), nrow = 2)),
+      "thinr does not accept NA values",
+      fixed = TRUE
+    )
+  })
+
+  it("integer NA errors with the documented message", {
+    expect_error(
+      thinr:::as_binary_matrix(matrix(c(NA_integer_, 1L, 0L, 1L), nrow = 2)),
+      "thinr does not accept NA values",
+      fixed = TRUE
+    )
+  })
+
+  it("NaN is rejected like NA", {
+    expect_error(
+      thinr:::as_binary_matrix(matrix(c(NaN, 1, 0, 1), nrow = 2)),
+      "thinr does not accept NA values",
+      fixed = TRUE
+    )
+  })
+
+  it("distance_transform() rejects NA input through the shared helper", {
+    expect_error(
+      distance_transform(matrix(c(NA, 1, 0, 1), nrow = 2)),
+      "thinr does not accept NA values",
+      fixed = TRUE
+    )
+  })
+
+  it("medial_axis() rejects NA input through the shared helper", {
+    expect_error(
+      medial_axis(matrix(c(NA, 1, 0, 1), nrow = 2)),
+      "thinr does not accept NA values",
+      fixed = TRUE
+    )
+  })
+})
+
 describe("as_binary_matrix: unsupported inputs error with the documented message", {
   it("character matrix names the storage mode in the message", {
     expect_error(

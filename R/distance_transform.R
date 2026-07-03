@@ -5,7 +5,7 @@
 #'
 #' @param image A binary image: a matrix where non-zero values are
 #'   foreground and zero values are background. Logical, integer, and
-#'   numeric inputs are accepted.
+#'   numeric inputs are accepted; `NA` values are not.
 #' @param metric Distance metric. One of:
 #'   * `"euclidean"` (default) — exact L2 distance, via
 #'     Felzenszwalb & Huttenlocher (2012) linear-time separable

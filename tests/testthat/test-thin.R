@@ -246,6 +246,21 @@ describe("input validation", {
     expect_error(thin(img), "expects a 2-D matrix")
   })
 
+  it("errors on NA in a numeric matrix", {
+    img <- matrix(c(NA, 1, 0, 1), nrow = 2)
+    expect_error(thin(img), "does not accept NA values", fixed = TRUE)
+  })
+
+  it("errors on NA in a logical matrix", {
+    img <- matrix(c(NA, TRUE, FALSE, TRUE), nrow = 2)
+    expect_error(thin(img), "does not accept NA values", fixed = TRUE)
+  })
+
+  it("errors on NA in an integer matrix", {
+    img <- matrix(c(NA_integer_, 1L, 0L, 1L), nrow = 2)
+    expect_error(thin(img), "does not accept NA values", fixed = TRUE)
+  })
+
   it("errors on a 3-D array", {
     img <- array(0L, dim = c(3, 3, 2))
     expect_error(thin(img), "expects a 2-D matrix")

@@ -9,7 +9,7 @@ distance_transform(image, metric = c("euclidean", "manhattan", "chessboard"))
 \arguments{
 \item{image}{A binary image: a matrix where non-zero values are
 foreground and zero values are background. Logical, integer, and
-numeric inputs are accepted.}
+numeric inputs are accepted; \code{NA} values are not.}
 
 \item{metric}{Distance metric. One of:
 \itemize{

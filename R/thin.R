@@ -5,8 +5,9 @@
 #'
 #' @param image A binary image: a matrix or array where non-zero values
 #'   are foreground and zero values are background. Logical, integer, and
-#'   numeric inputs are all accepted. The image is treated as a 2-D
-#'   matrix; arrays with more than two dimensions are not yet supported.
+#'   numeric inputs are all accepted; `NA` values are not. The image is
+#'   treated as a 2-D matrix; arrays with more than two dimensions are
+#'   not yet supported.
 #' @param method Algorithm to use. One of `"zhang_suen"` (default,
 #'   matches `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D
 #'   adaptation of Lee, Kashyap & Chu 1994), `"k3m"` (Saeed et al.
@@ -66,6 +67,12 @@ thin <- function(image,
 # Convert any binary-image-shaped input to an IntegerMatrix where
 # foreground is 1 and background is 0.
 as_binary_matrix <- function(image) {
+  if (anyNA(image)) {
+    # NA_integer_ is INT_MIN in the C++ kernels, where it silently
+    # corrupts neighbour sums far from the NA cell; reject it loudly.
+    stop("thinr does not accept NA values in a binary image. ",
+         "Recode NAs to 0 (background) or 1 (foreground) first.")
+  }
   if (is.matrix(image)) {
     if (is.logical(image)) {
       return(matrix(as.integer(image), nrow = nrow(image), ncol = ncol(image)))

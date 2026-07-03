@@ -13,8 +13,9 @@ thin(
 \arguments{
 \item{image}{A binary image: a matrix or array where non-zero values
 are foreground and zero values are background. Logical, integer, and
-numeric inputs are all accepted. The image is treated as a 2-D
-matrix; arrays with more than two dimensions are not yet supported.}
+numeric inputs are all accepted; \code{NA} values are not. The image is
+treated as a 2-D matrix; arrays with more than two dimensions are
+not yet supported.}
 
 \item{method}{Algorithm to use. One of \code{"zhang_suen"} (default,
 matches \code{EBImage::thinImage}), \code{"guo_hall"}, \code{"lee"} (2-D
