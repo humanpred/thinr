@@ -37,6 +37,26 @@ count_components <- function(img) {
   n
 }
 
+# Rasterize a circular ring of the given radius / stroke thickness;
+# used by the connectivity and complex-shape tests.
+build_ring <- function(nrow, ncol, radius, cr, cc, thickness = 1) {
+  img <- matrix(0L, nrow = nrow, ncol = ncol)
+  for (angle in seq(0, 2 * pi, length.out = 200)) {
+    r <- round(cr + radius * cos(angle))
+    c <- round(cc + radius * sin(angle))
+    for (dr in -thickness:thickness) {
+      for (dc in -thickness:thickness) {
+        rr <- r + dr
+        cc2 <- c + dc
+        if (rr >= 1 && rr <= nrow && cc2 >= 1 && cc2 <= ncol) {
+          img[rr, cc2] <- 1L
+        }
+      }
+    }
+  }
+  img
+}
+
 describe("solid square thins to a much smaller skeleton", {
   for (mth in methods) {
     local({
@@ -62,11 +82,10 @@ describe("horizontal line collapses to (nearly) a single row", {
         sk <- thin(img, method = m)
         rows_with_fg <- which(rowSums(sk) > 0)
         # OPTA's N2 condition protects diagonal-2-neighbour patterns,
-        # which preserves bar corner pixels on the top and bottom row;
-        # Holt's H condition has no crossing-number topology guard.
-        # Both leave stray pixels at the bar ends - this is the
-        # published behaviour, not an implementation choice.
-        max_rows <- if (m %in% c("opta", "holt")) 3L else 1L
+        # which preserves bar corner pixels on the top and bottom row -
+        # this is the published behaviour, not an implementation choice.
+        # Every other method collapses the bar to a single row.
+        max_rows <- if (m == "opta") 3L else 1L
         expect_lte(length(rows_with_fg), max_rows,
                    label = paste("method =", m,
                                  "; rows with foreground =",
@@ -90,6 +109,65 @@ describe("a 2px-thick bar keeps a single connected skeleton", {
         sk <- thin(img, method = m)
         expect_identical(count_components(img), 1L)
         expect_identical(count_components(sk), 1L)
+      })
+    })
+  }
+})
+
+describe("thinning preserves the 8-connected component count", {
+  # Thinning only deletes pixels, so it can split a component but never
+  # merge two; preserving the count exactly is the defining topological
+  # invariant of every method in the package.
+  shape_2px_hbar <- matrix(0L, nrow = 8, ncol = 15)
+  shape_2px_hbar[4:5, 3:13] <- 1L
+  shape_3px_hbar <- matrix(0L, nrow = 9, ncol = 15)
+  shape_3px_hbar[4:6, 3:13] <- 1L
+  shape_2px_vbar <- matrix(0L, nrow = 15, ncol = 8)
+  shape_2px_vbar[3:13, 4:5] <- 1L
+  shape_3px_vbar <- matrix(0L, nrow = 15, ncol = 9)
+  shape_3px_vbar[3:13, 4:6] <- 1L
+  shape_l <- matrix(0L, nrow = 13, ncol = 13)
+  shape_l[3:11, 3:4] <- 1L
+  shape_l[10:11, 3:11] <- 1L
+  shape_t <- matrix(0L, nrow = 11, ncol = 11)
+  shape_t[3:5, 3:9] <- 1L
+  shape_t[5:9, 5:7] <- 1L
+  shape_plus <- matrix(0L, nrow = 11, ncol = 11)
+  shape_plus[5:7, 3:9] <- 1L
+  shape_plus[3:9, 5:7] <- 1L
+  shape_blobs <- matrix(0L, nrow = 9, ncol = 15)
+  shape_blobs[2:4, 2:4] <- 1L
+  shape_blobs[6:8, 11:13] <- 1L
+  shapes <- list(
+    "2px horizontal bar" = list(img = shape_2px_hbar, n = 1L),
+    "3px horizontal bar" = list(img = shape_3px_hbar, n = 1L),
+    "2px vertical bar"   = list(img = shape_2px_vbar, n = 1L),
+    "3px vertical bar"   = list(img = shape_3px_vbar, n = 1L),
+    "L-shape"            = list(img = shape_l, n = 1L),
+    "T-shape"            = list(img = shape_t, n = 1L),
+    "plus-shape"         = list(img = shape_plus, n = 1L),
+    "two disjoint blobs" = list(img = shape_blobs, n = 2L),
+    "thick ring"         = list(
+      img = build_ring(21, 21, radius = 7, cr = 11, cc = 11, thickness = 2),
+      n = 1L
+    )
+  )
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        for (shape_name in names(shapes)) {
+          img <- shapes[[shape_name]]$img
+          n <- shapes[[shape_name]]$n
+          expect_identical(count_components(img), n,
+                           label = paste0("count_components(", shape_name, ")"))
+          sk <- thin(img, method = m)
+          expect_identical(
+            count_components(sk), n,
+            label = paste0("count_components(thin(", shape_name,
+                           ", method = \"", m, "\"))")
+          )
+        }
       })
     })
   }
@@ -369,6 +447,7 @@ describe("shapes with multiple endpoints", {
         sk <- thin(img, method = m)
         expect_gt(sum(sk), 0L)
         expect_lt(sum(sk), sum(img))
+        expect_identical(count_components(sk), 1L)
       })
       it(paste0("[", m, "] plus-shape collapses to a connected skeleton"), {
         img <- matrix(0L, nrow = 11, ncol = 11)
@@ -377,15 +456,18 @@ describe("shapes with multiple endpoints", {
         sk <- thin(img, method = m)
         expect_gt(sum(sk), 0L)
         expect_lt(sum(sk), sum(img))
+        expect_identical(count_components(sk), 1L)
       })
       it(paste0("[", m, "] disconnected components stay disconnected"), {
         img <- matrix(0L, nrow = 9, ncol = 11)
         img[2:4, 2:4] <- 1L
         img[6:8, 8:10] <- 1L
         sk <- thin(img, method = m)
-        # Each component has at least one surviving foreground pixel.
+        # Each component has at least one surviving foreground pixel,
+        # and the two components neither merge nor vanish.
         expect_gt(sum(sk[1:5, 1:6]), 0L)
         expect_gt(sum(sk[5:9, 6:11]), 0L)
+        expect_identical(count_components(sk), 2L)
       })
     })
   }
@@ -394,23 +476,6 @@ describe("shapes with multiple endpoints", {
 describe("complex shapes do not crash and yield smaller skeletons", {
   # Larger / more varied shapes drive iterations through more branches
   # of the underlying algorithms.
-  build_ring <- function(nrow, ncol, radius, cr, cc, thickness = 1) {
-    img <- matrix(0L, nrow = nrow, ncol = ncol)
-    for (angle in seq(0, 2 * pi, length.out = 200)) {
-      r <- round(cr + radius * cos(angle))
-      c <- round(cc + radius * sin(angle))
-      for (dr in -thickness:thickness) {
-        for (dc in -thickness:thickness) {
-          rr <- r + dr
-          cc2 <- c + dc
-          if (rr >= 1 && rr <= nrow && cc2 >= 1 && cc2 <= ncol) {
-            img[rr, cc2] <- 1L
-          }
-        }
-      }
-    }
-    img
-  }
   for (mth in methods) {
     local({
       m <- mth
