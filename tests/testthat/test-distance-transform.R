@@ -84,6 +84,24 @@ describe("distance_transform: exact full-matrix values from a corner", {
   })
 })
 
+describe("distance_transform: all-foreground image returns Inf", {
+  # With no background pixel there is no finite distance to report;
+  # every metric must return Inf, not a metric-dependent sentinel.
+  for (metric in c("euclidean", "manhattan", "chessboard")) {
+    local({
+      m <- metric
+      it(paste0("[", m, "] 3x3"), {
+        d <- distance_transform(matrix(1L, nrow = 3, ncol = 3), metric = m)
+        expect_identical(d, matrix(Inf, nrow = 3, ncol = 3))
+      })
+      it(paste0("[", m, "] 2x5"), {
+        d <- distance_transform(matrix(1L, nrow = 2, ncol = 5), metric = m)
+        expect_identical(d, matrix(Inf, nrow = 2, ncol = 5))
+      })
+    })
+  }
+})
+
 describe("distance_transform: all-background image returns zeros", {
   for (metric in c("euclidean", "manhattan", "chessboard")) {
     local({

@@ -125,12 +125,15 @@ namespace {
 NumericMatrix dt_manhattan(IntegerMatrix img) {
   int nrow = img.nrow();
   int ncol = img.ncol();
-  const double big = static_cast<double>(nrow) + static_cast<double>(ncol) + 1.0;
+  // Seed foreground with infinity so that an image with no background
+  // pixel reports Inf (matching dt_euclidean), not a finite sentinel;
+  // Inf + 1.0 propagates correctly through std::min.
+  const double inf = std::numeric_limits<double>::infinity();
   NumericMatrix d(nrow, ncol);
 
   for (int r = 0; r < nrow; r++) {
     for (int c = 0; c < ncol; c++) {
-      d(r, c) = (img(r, c) == 0) ? 0.0 : big;
+      d(r, c) = (img(r, c) == 0) ? 0.0 : inf;
     }
   }
 
@@ -164,12 +167,13 @@ NumericMatrix dt_manhattan(IntegerMatrix img) {
 NumericMatrix dt_chessboard(IntegerMatrix img) {
   int nrow = img.nrow();
   int ncol = img.ncol();
-  const double big = static_cast<double>(std::max(nrow, ncol)) + 1.0;
+  // Infinity seed for the same reason as dt_manhattan above.
+  const double inf = std::numeric_limits<double>::infinity();
   NumericMatrix d(nrow, ncol);
 
   for (int r = 0; r < nrow; r++) {
     for (int c = 0; c < ncol; c++) {
-      d(r, c) = (img(r, c) == 0) ? 0.0 : big;
+      d(r, c) = (img(r, c) == 0) ? 0.0 : inf;
     }
   }
 
