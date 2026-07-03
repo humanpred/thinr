@@ -30,12 +30,15 @@
 // Iterate until no deletions.
 //
 // Implementation note: SPTA in the original paper performs two raster
-// scans per cycle that together cover all four directions. The
-// implementation here is the parallel-friendly equivalent: each cycle
-// computes safety / deletability for every contour pixel using the
-// pre-cycle state, then deletes the unsafe ones in batch. The
+// scans per cycle so that a deletion on one side of a stroke becomes
+// visible before the opposite side is tested; that sequential
+// visibility is what keeps a two-pixel-thick stroke connected. The
+// implementation here preserves that guarantee with four per-direction
+// sub-iterations per cycle: each sub-iteration marks the deletable
+// pixels on one contour (west, east, north, south) against the current
+// state and deletes them before the next direction is scanned. The
 // per-direction safety conditions are unchanged; only the scan order
-// differs from the sequential paper form.
+// differs from the two-scan paper form.
 
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -93,51 +96,59 @@ IntegerMatrix opta_cpp(IntegerMatrix img, int max_iter) {
 
   for (int it = 0; it < max_iter; it++) {
     bool changed = false;
-    std::fill(mark.begin(), mark.end(), 0);
 
-    for (int r = 1; r < nrow - 1; r++) {
-      for (int c = 1; c < ncol - 1; c++) {
-        if (m(r, c) != 1) continue;
-        int p2 = m(r - 1, c);
-        int p3 = m(r - 1, c + 1);
-        int p4 = m(r,     c + 1);
-        int p5 = m(r + 1, c + 1);
-        int p6 = m(r + 1, c);
-        int p7 = m(r + 1, c - 1);
-        int p8 = m(r,     c - 1);
-        int p9 = m(r - 1, c - 1);
+    // Four per-direction sub-iterations (west, east, north, south):
+    // mark the deletable pixels on one contour, delete them, then scan
+    // the next direction against the updated state.
+    for (int dir = 0; dir < 4; dir++) {
+      std::fill(mark.begin(), mark.end(), 0);
 
-        // N2 protection: pixel has exactly 2 4-adjacent FG neighbours.
-        if (n2_protected(p2, p4, p6, p8)) continue;
+      for (int r = 1; r < nrow - 1; r++) {
+        for (int c = 1; c < ncol - 1; c++) {
+          if (m(r, c) != 1) continue;
+          int p2 = m(r - 1, c);
+          int p3 = m(r - 1, c + 1);
+          int p4 = m(r,     c + 1);
+          int p5 = m(r + 1, c + 1);
+          int p6 = m(r + 1, c);
+          int p7 = m(r + 1, c - 1);
+          int p8 = m(r,     c - 1);
+          int p9 = m(r - 1, c - 1);
 
-        bool on_contour = false;
-        bool is_safe = false;
+          // Only pixels on this sub-iteration's contour are candidates.
+          bool on_contour = (dir == 0) ? (p8 == 0)
+                          : (dir == 1) ? (p4 == 0)
+                          : (dir == 2) ? (p2 == 0)
+                          :              (p6 == 0);
+          if (!on_contour) continue;
 
-        if (p8 == 0) {
-          on_contour = true;
-          if (safe_west(p2, p3, p4, p5, p6, p7, p8, p9)) is_safe = true;
+          // N2 protection: pixel has exactly 2 4-adjacent FG neighbours.
+          if (n2_protected(p2, p4, p6, p8)) continue;
+
+          // p is preserved if it is safe under ANY contour it lies on.
+          bool is_safe = false;
+          if (p8 == 0 && safe_west(p2, p3, p4, p5, p6, p7, p8, p9)) {
+            is_safe = true;
+          }
+          if (p4 == 0 && safe_east(p2, p3, p4, p5, p6, p7, p8, p9)) {
+            is_safe = true;
+          }
+          if (p2 == 0 && safe_north(p2, p3, p4, p5, p6, p7, p8, p9)) {
+            is_safe = true;
+          }
+          if (p6 == 0 && safe_south(p2, p3, p4, p5, p6, p7, p8, p9)) {
+            is_safe = true;
+          }
+
+          if (!is_safe) mark(r, c) = 1;
         }
-        if (p4 == 0) {
-          on_contour = true;
-          if (safe_east(p2, p3, p4, p5, p6, p7, p8, p9)) is_safe = true;
-        }
-        if (p2 == 0) {
-          on_contour = true;
-          if (safe_north(p2, p3, p4, p5, p6, p7, p8, p9)) is_safe = true;
-        }
-        if (p6 == 0) {
-          on_contour = true;
-          if (safe_south(p2, p3, p4, p5, p6, p7, p8, p9)) is_safe = true;
-        }
-
-        if (on_contour && !is_safe) mark(r, c) = 1;
       }
-    }
 
-    for (int i = 0; i < nrow * ncol; i++) {
-      if (mark[i]) {
-        m[i] = 0;
-        changed = true;
+      for (int i = 0; i < nrow * ncol; i++) {
+        if (mark[i]) {
+          m[i] = 0;
+          changed = true;
+        }
       }
     }
 

@@ -4,6 +4,39 @@
 methods <- c("zhang_suen", "guo_hall", "lee", "k3m",
              "hilditch", "opta", "holt")
 
+# Count 8-connected foreground components via flood fill; used by the
+# connectivity-preservation tests (thinning may only delete pixels, so
+# the component count must never change).
+count_components <- function(img) {
+  visited <- matrix(FALSE, nrow = nrow(img), ncol = ncol(img))
+  n <- 0L
+  for (r0 in seq_len(nrow(img))) {
+    for (c0 in seq_len(ncol(img))) {
+      if (img[r0, c0] == 0 || visited[r0, c0]) next
+      n <- n + 1L
+      queue <- list(c(r0, c0))
+      while (length(queue) > 0) {
+        pt <- queue[[1]]
+        queue <- queue[-1]
+        r <- pt[1]
+        c <- pt[2]
+        if (r < 1 || r > nrow(img) || c < 1 || c > ncol(img)) next
+        if (visited[r, c]) next
+        if (img[r, c] == 0) next
+        visited[r, c] <- TRUE
+        for (dr in -1L:1L) {
+          for (dc in -1L:1L) {
+            if (dr != 0L || dc != 0L) {
+              queue <- c(queue, list(c(r + dr, c + dc)))
+            }
+          }
+        }
+      }
+    }
+  }
+  n
+}
+
 describe("solid square thins to a much smaller skeleton", {
   for (mth in methods) {
     local({
@@ -38,6 +71,25 @@ describe("horizontal line collapses to (nearly) a single row", {
                    label = paste("method =", m,
                                  "; rows with foreground =",
                                  paste(rows_with_fg, collapse = ",")))
+      })
+    })
+  }
+})
+
+describe("a 2px-thick bar keeps a single connected skeleton", {
+  # A two-pixel-thick stroke is the canonical parallel-deletion trap: a
+  # batch pass that tests both sides against the pre-pass state can
+  # delete both sides at once and disconnect the shape. Sequential /
+  # sub-iteration algorithms must keep the bar in one piece.
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 6, ncol = 13)
+        img[3:4, 3:11] <- 1L
+        sk <- thin(img, method = m)
+        expect_identical(count_components(img), 1L)
+        expect_identical(count_components(sk), 1L)
       })
     })
   }
