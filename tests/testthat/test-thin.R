@@ -300,10 +300,9 @@ describe("already-thin skeleton is a fixed point of thin()", {
 })
 
 describe("output has no foreground pixels on the matrix border", {
-  # Thinning algorithms in this package examine an 8-neighbourhood, so they
-  # leave the outermost row / column untouched. We test a representative
-  # shape against each algorithm and check that the border stays clear
-  # when the input has a one-pixel margin.
+  # Thinning only deletes pixels, so an input with a one-pixel
+  # background margin must keep that margin clear. We test a
+  # representative shape against each algorithm.
   for (mth in methods) {
     local({
       m <- mth
@@ -330,8 +329,7 @@ describe("small / degenerate inputs do not crash", {
       })
       it(paste0("[", m, "] 1x1 single-foreground matrix"), {
         img <- matrix(1L, nrow = 1, ncol = 1)
-        # Boundary pixels are not eligible for removal, so this should be
-        # preserved.
+        # An isolated pixel is an endpoint, so it must be preserved.
         expect_equal(thin(img, method = m), img)
       })
       it(paste0("[", m, "] 3x3 matrix with one centre pixel"), {
@@ -441,16 +439,50 @@ describe("exact skeletons on small known shapes", {
   })
 
   it("thinImage matches its documented 3x5 example output exactly", {
+    # The 3x3 block touches the top and bottom matrix edges; it must
+    # thin to the same single centre pixel as the interior 3x3 block
+    # above, not keep its edge rows un-thinned.
     img <- matrix(c(0, 1, 1, 1, 0,
                     0, 1, 1, 1, 0,
                     0, 1, 1, 1, 0),
                   nrow = 3, byrow = TRUE)
-    expected <- matrix(c(0, 1, 1, 1, 0,
+    expected <- matrix(c(0, 0, 0, 0, 0,
                          0, 0, 1, 0, 0,
-                         0, 1, 1, 1, 0),
+                         0, 0, 0, 0, 0),
                        nrow = 3, byrow = TRUE)
     expect_identical(thinImage(img), expected)
   })
+})
+
+describe("shapes touching the matrix edge are thinned like interior shapes", {
+  # A 3px-wide vertical bar spanning every row: the edge rows must not
+  # be left at their full 3px width just because they sit on the matrix
+  # border. Row widths are pinned exactly per method (OPTA's N2
+  # condition keeps the corner pixel pairs at the bar ends, matching
+  # its published end-pixel behaviour on interior bars).
+  expected_widths <- list(
+    zhang_suen = c(0, 1, 1, 1, 1, 1, 0, 0),
+    guo_hall   = c(0, 1, 1, 1, 1, 1, 1, 0),
+    lee        = c(0, 1, 1, 1, 1, 1, 1, 0),
+    k3m        = c(0, 1, 1, 1, 1, 1, 1, 1),
+    hilditch   = c(0, 1, 1, 1, 1, 1, 1, 0),
+    opta       = c(2, 1, 1, 1, 1, 1, 1, 2),
+    holt       = c(0, 1, 1, 1, 1, 1, 1, 0)
+  )
+  for (mth in methods) {
+    local({
+      m <- mth
+      it(paste0("[", m, "]"), {
+        img <- matrix(0L, nrow = 8, ncol = 6)
+        img[, 3:5] <- 1L
+        sk <- thin(img, method = m)
+        expect_identical(unname(rowSums(sk)), expected_widths[[m]])
+        skeleton_cols <- sort(unique(which(sk == 1L, arr.ind = TRUE)[, "col"]))
+        expect_identical(skeleton_cols, if (m == "opta") c(3L, 4L, 5L) else 4L)
+        expect_identical(count_components(sk), 1L)
+      })
+    })
+  }
 })
 
 describe("thinImage drop-in", {

@@ -40,16 +40,26 @@ thin <- function(image,
                  max_iter = 1000L) {
   method <- match.arg(method)
   mat <- as_binary_matrix(image)
+  # The C++ kernels examine an 8-neighbourhood and therefore never
+  # delete pixels in the outermost row/column. Pad with a one-pixel
+  # background border so shapes touching the matrix edge are thinned
+  # like interior shapes, then crop back to the original extent.
+  rows <- seq_len(nrow(mat)) + 1L
+  cols <- seq_len(ncol(mat)) + 1L
+  padded <- matrix(0L, nrow = nrow(mat) + 2L, ncol = ncol(mat) + 2L)
+  padded[rows, cols] <- mat
   iter <- as.integer(max_iter)
   out <- switch(method,
-    zhang_suen = .zhang_suen_cpp(mat, iter),
-    guo_hall   = .guo_hall_cpp(mat,   iter),
-    lee        = .lee_cpp(mat,        iter),
-    k3m        = .k3m_cpp(mat,        iter),
-    hilditch   = .hilditch_cpp(mat,   iter),
-    opta       = .opta_cpp(mat,       iter),
-    holt       = .holt_cpp(mat,       iter)
+    zhang_suen = .zhang_suen_cpp(padded, iter),
+    guo_hall   = .guo_hall_cpp(padded,   iter),
+    lee        = .lee_cpp(padded,        iter),
+    k3m        = .k3m_cpp(padded,        iter),
+    hilditch   = .hilditch_cpp(padded,   iter),
+    opta       = .opta_cpp(padded,       iter),
+    holt       = .holt_cpp(padded,       iter)
   )
+  out <- out[rows, cols, drop = FALSE]
+  dimnames(out) <- dimnames(mat)
   restore_storage(out, image)
 }
 
