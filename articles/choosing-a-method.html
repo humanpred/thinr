@@ -258,11 +258,14 @@ specifically designed to preserve 2-pixel-wide lines.</li>
 <ul>
 <li>
 <strong><code>zhang_suen</code></strong> — the default. Most
-predictable behavior. Use for general purpose thinning.</li>
+predictable behavior. Use for general purpose thinning. One caveat: an
+<em>isolated</em> 2×2 block is erased entirely (see “Small isolated
+blobs” below).</li>
 <li>
 <strong><code>guo_hall</code></strong> — try this if your skeletons
 have lots of diagonal features and Zhang-Suen is breaking them at
-corners.</li>
+corners. Keeps one pixel of an isolated 2×2 block where Zhang-Suen
+erases it.</li>
 <li>
 <strong><code>lee</code></strong> — when you want directional
 processing (four sub-iterations per pass, one per cardinal direction).
@@ -285,6 +288,26 @@ property of SPTA).</li>
 be preserved. The algorithm uses edge information from neighbouring
 pixels in a 5x5 window, allowing a single subcycle.</li>
 </ul>
+<div class="section level3">
+<h3 id="small-isolated-blobs">Small isolated blobs<a class="anchor" aria-label="anchor" href="#small-isolated-blobs"></a>
+</h3>
+<p>The methods disagree on the smallest shapes. An isolated 2×2 block is
+the notable case: all four of its pixels pass the Zhang-Suen deletion
+gate in the same sub-iteration, so the default method erases the block
+completely, while Guo-Hall keeps one pixel.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">block</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">6</span>, <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="va">block</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">block</span>, method <span class="op">=</span> <span class="st">"zhang_suen"</span><span class="op">)</span><span class="op">)</span>  <span class="co"># 0 — the block is erased</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="../reference/thin.html">thin</a></span><span class="op">(</span><span class="va">block</span>, method <span class="op">=</span> <span class="st">"guo_hall"</span><span class="op">)</span><span class="op">)</span>    <span class="co"># 1 — one pixel survives</span></span>
+<span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
+<p>This matters when a mask can contain tiny blobs — a marker remnant, a
+dotted-line dash, a speck left after segmentation. If such blobs must
+not vanish, use <code>guo_hall</code> (or filter blobs by size before
+thinning) rather than the default. Larger isolated shapes (3×3 and up)
+survive under every method; only the 2×2 block is fully erased.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="medial-axis-transform">Medial axis transform<a class="anchor" aria-label="anchor" href="#medial-axis-transform"></a>
@@ -292,7 +315,7 @@ pixels in a 5x5 window, allowing a single subcycle.</li>
 <p>The thinning algorithms above all produce binary 1-pixel-wide
 skeletons without width information. For tasks where local thickness
 matters, use <code><a href="../reference/medial_axis.html">medial_axis()</a></code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">9</span>, <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">m</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">7</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">9</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span>      <span class="co"># 5x7 solid rectangle</span></span>
 <span><span class="fu"><a href="../reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
@@ -306,7 +329,7 @@ matters, use <code><a href="../reference/medial_axis.html">medial_axis()</a></co
 <span><span class="co">#&gt;  [7,]    0    0    1    1    0    0    0    1    1     0     0</span></span>
 <span><span class="co">#&gt;  [8,]    0    0    0    0    0    0    0    0    0     0     0</span></span>
 <span><span class="co">#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0     0</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span>, return_distance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">result</span><span class="op">$</span><span class="va">skeleton</span></span>
 <span><span class="co">#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11]</span></span>
@@ -338,7 +361,7 @@ the nearest background pixel.</p>
 </h2>
 <p><code><a href="../reference/distance_transform.html">distance_transform()</a></code> exposes the distance transform
 itself as a stand-alone utility, with a choice of metric:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">m</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0L</span></span>
 <span><span class="fu"><a href="../reference/distance_transform.html">distance_transform</a></span><span class="op">(</span><span class="va">m</span>, metric <span class="op">=</span> <span class="st">"manhattan"</span><span class="op">)</span></span>
@@ -383,7 +406,7 @@ supported.</p>
 </h2>
 <p>A simple <code><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">bench::mark()</a></code> comparison on a moderate image
 (illustrative):</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bench.r-lib.org/" class="external-link">bench</a></span><span class="op">)</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">200</span>, <span class="fl">200</span><span class="op">)</span></span>
 <span><span class="va">m</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">150</span>, <span class="fl">50</span><span class="op">:</span><span class="fl">150</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span>  <span class="co"># solid square</span></span>

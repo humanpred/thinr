@@ -167,9 +167,11 @@ the bottom. Differences show up on more complex shapes:
 ## When to use which
 
 - **`zhang_suen`** — the default. Most predictable behavior. Use for
-  general purpose thinning.
+  general purpose thinning. One caveat: an *isolated* 2×2 block is
+  erased entirely (see “Small isolated blobs” below).
 - **`guo_hall`** — try this if your skeletons have lots of diagonal
-  features and Zhang-Suen is breaking them at corners.
+  features and Zhang-Suen is breaking them at corners. Keeps one pixel
+  of an isolated 2×2 block where Zhang-Suen erases it.
 - **`lee`** — when you want directional processing (four sub-iterations
   per pass, one per cardinal direction). Sometimes produces cleaner
   skeletons on asymmetric inputs.
@@ -185,6 +187,29 @@ the bottom. Differences show up on more complex shapes:
 - **`holt`** — when 2-pixel-wide lines should be preserved. The
   algorithm uses edge information from neighbouring pixels in a 5x5
   window, allowing a single subcycle.
+
+### Small isolated blobs
+
+The methods disagree on the smallest shapes. An isolated 2×2 block is
+the notable case: all four of its pixels pass the Zhang-Suen deletion
+gate in the same sub-iteration, so the default method erases the block
+completely, while Guo-Hall keeps one pixel.
+
+``` r
+
+block <- matrix(0L, 6, 6)
+block[3:4, 3:4] <- 1L
+sum(thin(block, method = "zhang_suen"))  # 0 — the block is erased
+#> [1] 0
+sum(thin(block, method = "guo_hall"))    # 1 — one pixel survives
+#> [1] 1
+```
+
+This matters when a mask can contain tiny blobs — a marker remnant, a
+dotted-line dash, a speck left after segmentation. If such blobs must
+not vanish, use `guo_hall` (or filter blobs by size before thinning)
+rather than the default. Larger isolated shapes (3×3 and up) survive
+under every method; only the 2×2 block is fully erased.
 
 ## Medial axis transform
 
