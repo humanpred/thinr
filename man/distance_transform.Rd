@@ -9,7 +9,8 @@ distance_transform(image, metric = c("euclidean", "manhattan", "chessboard"))
 \arguments{
 \item{image}{A binary image: a matrix where non-zero values are
 foreground and zero values are background. Logical, integer, and
-numeric inputs are accepted; \code{NA} values are not.}
+numeric inputs are accepted. \code{NA} values are rejected with an error
+rather than silently coerced.}
 
 \item{metric}{Distance metric. One of:
 \itemize{
@@ -25,7 +26,12 @@ two-pass sweep with 8-connected propagation.
 \value{
 A numeric matrix of the same shape as \code{image}. Background
 pixels are 0; foreground pixels carry their distance to the
-nearest background pixel.
+nearest background pixel. When the image is entirely foreground
+(no background pixel exists) every pixel is \code{Inf}, consistently
+across all three metrics — the distance to a non-existent nearest
+background pixel is unbounded, matching \code{EBImage::distmap()}. Only
+pixels count as background; the region outside the matrix is not
+treated as an implicit background border.
 }
 \description{
 Compute the distance from each foreground pixel to the nearest

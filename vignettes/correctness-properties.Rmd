@@ -1,0 +1,212 @@
+---
+title: "Correctness properties: edge handling, connectivity, and boundary cases"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Correctness properties: edge handling, connectivity, and boundary cases}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(thinr)
+```
+
+## Scope
+
+The published thinning algorithms — Zhang–Suen, Guo–Hall, OPTA/SPTA,
+Hilditch, Holt, Lee, K3M — are defined pixel-locally: each pass classifies
+a foreground pixel as deletable from its 8-neighbourhood alone. That local
+definition leaves three things unstated that any *implementation* must
+nonetheless decide, because real images exercise all three:
+
+1. what happens to pixels on the image border, where the 8-neighbourhood
+   spills outside the matrix;
+2. whether the deletion *order* within a pass preserves connectivity for
+   thin (two-pixel-wide) structures;
+3. what a distance transform reports when there is no background pixel to
+   measure to.
+
+None of these is a new algorithm. They are the boundary conditions the
+papers assume away, and getting them wrong produces skeletons that are
+locally plausible but globally wrong. This vignette states the guarantees
+`thinr` makes, why they follow from the methods rather than departing from
+them, and how each is tested. They hold **uniformly across all seven
+thinning methods** (and, for §3, across all three distance metrics), so
+they are documented once here rather than per method.
+
+This is a note on implementation correctness, not a new method. Where an
+earlier version of `thinr` deviated from a published algorithm, the
+guarantees below describe the *restoration* of the paper's behaviour, not
+an extension of it.
+
+## 1. Edge handling: shapes that touch the frame
+
+Every kernel reads an 8-neighbourhood, so a border pixel has neighbours
+that lie outside the matrix. The simplest implementation — iterate over
+interior pixels `2..(n-1)` only — never even considers a border pixel for
+deletion. A shape that touches the frame then keeps a two- or
+three-pixel-thick ridge along that edge, silently violating the
+one-pixel-wide contract that is the entire point of thinning.
+
+The papers do not intend the frame to armour the object: they are written
+for a shape drawn on an unbounded background. `thinr` reproduces that by
+surrounding the image with a one-pixel background margin before thinning
+and cropping it back afterward, so a shape is skeletonised **identically
+whether or not it touches the border**.
+
+```{r edge}
+# A 3-pixel-thick horizontal bar flush against the top edge.
+bar_top <- matrix(0L, nrow = 5, ncol = 9)
+bar_top[1:3, ] <- 1L
+
+# The same bar one row in from the edge.
+bar_interior <- matrix(0L, nrow = 5, ncol = 9)
+bar_interior[2:4, ] <- 1L
+
+# Both thin to a single-pixel line, and to the same number of pixels.
+sum(thin(bar_top))
+sum(thin(bar_interior))
+```
+
+Because thinning only removes pixels, an image supplied with a one-pixel
+background margin must come back with that margin still clear — a property
+that is cheap to assert for every method:
+
+```{r edge-test}
+methods <- c("zhang_suen", "guo_hall", "lee", "k3m",
+             "hilditch", "opta", "holt")
+vapply(methods, function(m) {
+  out <- thin(bar_top, method = m)
+  # No foreground survives more than one pixel thick on the top edge.
+  max(colSums(out[1:2, , drop = FALSE])) <= 1L
+}, logical(1))
+```
+
+## 2. Connectivity: thin strokes must not fragment
+
+A thinning pass may delete many pixels, and it must not delete so many
+that a connected object falls apart. The classic failure is a
+two-pixel-wide stroke: if both edges of the stroke are judged deletable
+against the *same* pre-pass snapshot and removed together, the middle
+vanishes and the stroke collapses into disconnected fragments.
+
+The parallel algorithms avoid this with sub-iterations (Zhang–Suen and
+Guo–Hall alternate two passes with complementary conditions), and the
+sequential algorithms avoid it by making each deletion visible before the
+opposing side is tested. OPTA/SPTA is the sequential case: Naccache &
+Shinghal's formulation performs two raster scans per cycle precisely so
+that removing one side of a stroke is seen before the other side is
+considered. An implementation that instead evaluates all four contour
+directions against one frozen snapshot and deletes in a single batch is
+faster to write but *is not the published algorithm* — and it fragments
+exactly the two-pixel strokes the method was designed to preserve.
+
+`thinr`'s guarantee is the one the methods provide: **an object that
+starts as a single 8-connected component thins to a single 8-connected
+component.** A two-pixel-wide bar thins to a connected one-pixel line.
+
+```{r connectivity}
+# 8-connected component count.
+n_components <- function(m) {
+  m <- m != 0
+  lab <- matrix(0L, nrow(m), ncol(m))
+  k <- 0L
+  for (i in seq_len(nrow(m))) for (j in seq_len(ncol(m))) {
+    if (m[i, j] && lab[i, j] == 0L) {
+      k <- k + 1L
+      stack <- list(c(i, j)); lab[i, j] <- k
+      while (length(stack)) {
+        p <- stack[[length(stack)]]; stack[[length(stack)]] <- NULL
+        for (di in -1:1) for (dj in -1:1) {
+          r <- p[1] + di; cc <- p[2] + dj
+          if (r >= 1 && r <= nrow(m) && cc >= 1 && cc <= ncol(m) &&
+              m[r, cc] && lab[r, cc] == 0L) {
+            lab[r, cc] <- k; stack[[length(stack) + 1]] <- c(r, cc)
+          }
+        }
+      }
+    }
+  }
+  k
+}
+
+# A 2-pixel-thick, 9-pixel-long bar: one component in, one component out.
+bar2 <- matrix(0L, nrow = 6, ncol = 13)
+bar2[3:4, 3:11] <- 1L
+vapply(methods, function(m) n_components(thin(bar2, method = m)),
+       integer(1))
+```
+
+Every method returns `1`: the stroke stays connected. (Before this
+guarantee was enforced, OPTA returned the four corner pixels of the bar —
+four disconnected components — a good example of a locally-valid,
+globally-broken skeleton.)
+
+## 3. Distance transform with no background pixel
+
+`distance_transform()` reports, for each foreground pixel, the distance to
+the nearest background pixel. When the image is *entirely* foreground there
+is no such pixel, and the only consistent answer is that the distance is
+unbounded. All three metrics return `Inf`:
+
+```{r dt-inf}
+solid <- matrix(1L, nrow = 4, ncol = 4)
+vapply(c("euclidean", "manhattan", "chessboard"),
+       function(mt) unique(as.vector(distance_transform(solid, metric = mt))),
+       numeric(1))
+```
+
+A finite sentinel here (for example "one more than the image diagonal")
+would be indistinguishable from a genuine large distance and would poison
+any downstream comparison or medial-axis threshold. `Inf` is both the
+mathematically correct value and what `EBImage::distmap()` returns, so the
+two are interchangeable on this boundary case. Note also that only pixels
+count as background: the region outside the matrix is **not** an implicit
+background border, so a fully-foreground image does not measure distance to
+the frame.
+
+## 4. Invalid input fails loudly
+
+Thinning and distance transforms are defined on `{0, 1}` images. An `NA`
+is neither foreground nor background, and silently coercing it (to `0`,
+say) would change the skeleton or the distance field without warning.
+`thinr` rejects `NA` input with an error at the coercion boundary rather
+than guessing:
+
+```{r na, error = TRUE}
+m <- matrix(1L, nrow = 3, ncol = 3)
+m[2, 2] <- NA
+thin(m)
+```
+
+This matches `EBImage`'s own contract for `distmap()`
+(`'x' shouldn't contain any NAs`).
+
+## Summary
+
+| Property | Guarantee | Applies to |
+|---|---|---|
+| Edge handling | shapes touching the frame thin as if interior | all 7 thinning methods |
+| Connectivity | one component in → one component out; 2px strokes stay connected | all 7 thinning methods |
+| Empty background | fully-foreground image → `Inf` everywhere | all 3 distance metrics |
+| Invalid input | `NA` rejected with an error, never coerced | `thin()`, `distance_transform()`, `medial_axis()` |
+
+These are correctness boundary conditions, uniform across the toolkit,
+consistent with the published methods, and each pinned by a test in the
+package suite.
+
+## References
+
+Naccache, N. J., & Shinghal, R. (1984). SPTA: A proposed algorithm for
+thinning binary patterns. *IEEE Transactions on Systems, Man, and
+Cybernetics*, SMC-14(3), 409–418.
+
+Zhang, T. Y., & Suen, C. Y. (1984). A fast parallel algorithm for thinning
+digital patterns. *Communications of the ACM*, 27(3), 236–239.
+
+Felzenszwalb, P. F., & Huttenlocher, D. P. (2012). Distance transforms of
+sampled functions. *Theory of Computing*, 8(19), 415–428.

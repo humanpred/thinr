@@ -5,7 +5,8 @@
 #'
 #' @param image A binary image: a matrix where non-zero values are
 #'   foreground and zero values are background. Logical, integer, and
-#'   numeric inputs are accepted; `NA` values are not.
+#'   numeric inputs are accepted. `NA` values are rejected with an error
+#'   rather than silently coerced.
 #' @param metric Distance metric. One of:
 #'   * `"euclidean"` (default) — exact L2 distance, via
 #'     Felzenszwalb & Huttenlocher (2012) linear-time separable
@@ -17,7 +18,12 @@
 #'
 #' @return A numeric matrix of the same shape as `image`. Background
 #'   pixels are 0; foreground pixels carry their distance to the
-#'   nearest background pixel.
+#'   nearest background pixel. When the image is entirely foreground
+#'   (no background pixel exists) every pixel is `Inf`, consistently
+#'   across all three metrics — the distance to a non-existent nearest
+#'   background pixel is unbounded, matching `EBImage::distmap()`. Only
+#'   pixels count as background; the region outside the matrix is not
+#'   treated as an implicit background border.
 #'
 #' @examples
 #' # A 5x5 image with a single background pixel in the corner.
