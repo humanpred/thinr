@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Binary Image Thinning Algorithms">
-<meta name="description" content="Thinning (skeletonization) algorithms for binary raster images. Provides seven algorithms behind a single dispatching function: Zhang-Suen (Zhang and Suen 1984) &lt;doi:10.1145/357994.358023&gt;, Guo-Hall (Guo and Hall 1989) &lt;doi:10.1145/62065.62074&gt;, a 2-D adaptation of Lee (Lee, Kashyap, and Chu 1994) &lt;doi:10.1006/cgip.1994.1042&gt;, K3M (Saeed, Tabedzki, Rybnik, and Adamski 2010) &lt;doi:10.2478/v10006-010-0024-4&gt;, the parallel form commonly attributed to Hilditch (1969, in Machine Intelligence 4), OPTA / SPTA (Naccache and Shinghal 1984), and Holt and colleagues (1987) &lt;doi:10.1145/12527.12531&gt;. Also provides the medial axis transform (Blum 1967) and a distance transform implementation following Felzenszwalb and Huttenlocher (2012) &lt;doi:10.4086/toc.2012.v008a019&gt;. The drop-in thinImage() matches the signature of thinImage() in the EBImage package on Bioconductor so existing code can switch parsers without changes. The wider thin() API selects the algorithm by name.">
-<meta property="og:description" content="Thinning (skeletonization) algorithms for binary raster images. Provides seven algorithms behind a single dispatching function: Zhang-Suen (Zhang and Suen 1984) &lt;doi:10.1145/357994.358023&gt;, Guo-Hall (Guo and Hall 1989) &lt;doi:10.1145/62065.62074&gt;, a 2-D adaptation of Lee (Lee, Kashyap, and Chu 1994) &lt;doi:10.1006/cgip.1994.1042&gt;, K3M (Saeed, Tabedzki, Rybnik, and Adamski 2010) &lt;doi:10.2478/v10006-010-0024-4&gt;, the parallel form commonly attributed to Hilditch (1969, in Machine Intelligence 4), OPTA / SPTA (Naccache and Shinghal 1984), and Holt and colleagues (1987) &lt;doi:10.1145/12527.12531&gt;. Also provides the medial axis transform (Blum 1967) and a distance transform implementation following Felzenszwalb and Huttenlocher (2012) &lt;doi:10.4086/toc.2012.v008a019&gt;. The drop-in thinImage() matches the signature of thinImage() in the EBImage package on Bioconductor so existing code can switch parsers without changes. The wider thin() API selects the algorithm by name.">
+<meta name="description" content="Thinning (skeletonization) algorithms for binary raster images. Provides seven algorithms behind a single dispatching function: Zhang-Suen (Zhang and Suen 1984) &lt;doi:10.1145/357994.358023&gt;, Guo-Hall (Guo and Hall 1989) &lt;doi:10.1145/62065.62074&gt;, a 2-D adaptation of Lee (Lee, Kashyap, and Chu 1994) &lt;doi:10.1006/cgip.1994.1042&gt;, K3M (Saeed, Tabedzki, Rybnik, and Adamski 2010) &lt;doi:10.2478/v10006-010-0024-4&gt;, the parallel form commonly attributed to Hilditch (1969, in Machine Intelligence 4), OPTA / SPTA (Naccache and Shinghal 1984), and Holt and colleagues (1987) &lt;doi:10.1145/12527.12531&gt;. Also provides the medial axis transform (Blum 1967) and a distance transform implementation following Felzenszwalb and Huttenlocher (2012) &lt;doi:10.4086/toc.2012.v008a019&gt;. The thin() API selects the algorithm by name, defaulting to Zhang-Suen. Complements the morphology in the EBImage package, which does not provide a thinning operator.">
+<meta property="og:description" content="Thinning (skeletonization) algorithms for binary raster images. Provides seven algorithms behind a single dispatching function: Zhang-Suen (Zhang and Suen 1984) &lt;doi:10.1145/357994.358023&gt;, Guo-Hall (Guo and Hall 1989) &lt;doi:10.1145/62065.62074&gt;, a 2-D adaptation of Lee (Lee, Kashyap, and Chu 1994) &lt;doi:10.1006/cgip.1994.1042&gt;, K3M (Saeed, Tabedzki, Rybnik, and Adamski 2010) &lt;doi:10.2478/v10006-010-0024-4&gt;, the parallel form commonly attributed to Hilditch (1969, in Machine Intelligence 4), OPTA / SPTA (Naccache and Shinghal 1984), and Holt and colleagues (1987) &lt;doi:10.1145/12527.12531&gt;. Also provides the medial axis transform (Blum 1967) and a distance transform implementation following Felzenszwalb and Huttenlocher (2012) &lt;doi:10.4086/toc.2012.v008a019&gt;. The thin() API selects the algorithm by name, defaulting to Zhang-Suen. Complements the morphology in the EBImage package, which does not provide a thinning operator.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -52,7 +52,7 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>Binary image thinning (skeletonization) algorithms for R, plus the medial axis transform and a fast Euclidean / Manhattan / Chessboard distance transform. Designed as a drop-in replacement for <code>EBImage::thinImage()</code> with six additional thinning algorithms behind a single dispatching function.</p>
+<p>Binary image thinning (skeletonization) algorithms for R, plus the medial axis transform and a fast Euclidean / Manhattan / Chessboard distance transform. Seven thinning algorithms sit behind a single dispatching function. <code>EBImage</code>, the dominant R/Bioconductor image toolkit, provides binary morphology (<code>dilate</code>, <code>erode</code>, <code>distmap</code>, <code>watershed</code>) but no thinning operator; <code>thinr</code> fills that gap in a small, dependency-light package.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -73,16 +73,13 @@
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">11</span>, <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">m</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">9</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">9</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1L</span>      <span class="co"># 7x7 solid square</span></span>
 <span></span>
-<span><span class="co"># Default: Zhang-Suen (matches EBImage::thinImage)</span></span>
+<span><span class="co"># Default: Zhang-Suen</span></span>
 <span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Or pick an algorithm explicitly</span></span>
 <span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"guo_hall"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"hilditch"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/thin.html">thin</a></span><span class="op">(</span><span class="va">m</span>, method <span class="op">=</span> <span class="st">"holt"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Drop-in for EBImage::thinImage()</span></span>
-<span><span class="fu"><a href="reference/thinImage.html">thinImage</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Medial axis transform (returns binary skeleton + per-pixel width)</span></span>
 <span><span class="fu"><a href="reference/medial_axis.html">medial_axis</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span></span>
@@ -108,7 +105,7 @@
 <tbody>
 <tr>
 <td><code>zhang_suen</code></td>
-<td>Zhang, T. Y. &amp; Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. <em>Communications of the ACM</em>, 27(3), 236–239. <a href="https://doi.org/10.1145/357994.358023" class="external-link">doi:10.1145/357994.358023</a>. <em>Default; matches <code>EBImage::thinImage()</code>.</em>
+<td>Zhang, T. Y. &amp; Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. <em>Communications of the ACM</em>, 27(3), 236–239. <a href="https://doi.org/10.1145/357994.358023" class="external-link">doi:10.1145/357994.358023</a>. <em>Default.</em>
 </td>
 </tr>
 <tr>
@@ -164,7 +161,7 @@
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>LGPL-3. Chosen for drop-in compatibility with <code>EBImage</code> (which is LGPL) so that <code>EBImage</code> can optionally depend on <code>thinr</code> and retire its in-tree thinning code.</p>
+<p>LGPL-3, the same licence as <code>EBImage</code>, so that an <code>EBImage</code>-based pipeline (or <code>EBImage</code> itself) can depend on <code>thinr</code> for the thinning operator <code>EBImage</code> does not provide, without licence friction.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

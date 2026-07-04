@@ -40,7 +40,7 @@
 </blockquote>
 <div class="section level2">
 <h2 id="purpose">Purpose<a class="anchor" aria-label="anchor" href="#purpose"></a></h2>
-<p>Implement multiple binary image thinning algorithms behind a single dispatching API. Drop-in replacement for <code>EBImage::thinImage()</code>. Designed to be small, focused, CRAN-quality, and <code>EBImage</code>-license-compatible (LGPL-3).</p>
+<p>Implement multiple binary image thinning algorithms behind a single dispatching API. Fills the thinning / skeletonization gap that <code>EBImage</code> (binary morphology, but no thinning operator) leaves in the R image-processing stack. Designed to be small, focused, CRAN-quality, and <code>EBImage</code>-license-compatible (LGPL-3).</p>
 </div>
 <div class="section level2">
 <h2 id="pipeline-shape">Pipeline shape<a class="anchor" aria-label="anchor" href="#pipeline-shape"></a></h2>
@@ -86,8 +86,7 @@ restore_storage(skeleton, original) ──&gt; matrix in original storage mode</
 <div class="section level2">
 <h2 id="design-constraints">Design constraints<a class="anchor" aria-label="anchor" href="#design-constraints"></a></h2>
 <ol style="list-style-type: decimal"><li><p><strong>Minimal dependencies.</strong> Rcpp is the only Imports entry. The package is CRAN-targeted and should install cleanly on Linux, macOS, and Windows without system libraries beyond the C++ toolchain.</p></li>
-<li><p><strong>API stability.</strong> <code><a href="reference/thin.html">thin()</a></code> and <code><a href="reference/thinImage.html">thinImage()</a></code> are the public surface. Any signature change is a major version bump.</p></li>
-<li><p><strong>Drop-in compatibility.</strong> <code>thinImage(x)</code> must return the same shape and storage mode as <code>EBImage::thinImage(x)</code> for the same input. The default algorithm is therefore locked to Zhang-Suen.</p></li>
+<li><p><strong>API stability.</strong> <code><a href="reference/thin.html">thin()</a></code> is the public thinning surface. Any signature change is a major version bump. The default algorithm is locked to Zhang-Suen.</p></li>
 <li><p><strong>Stubs error, don’t silently fall back.</strong> Lee and K3M throw with a message that names the planned version. Silent fall-backs to Zhang-Suen would hide the limitation.</p></li>
 <li><p><strong>2-D for now.</strong> Higher-dimensional arrays are explicitly rejected. The Lee implementation in v0.2 introduces 3-D support; the dispatcher will route based on <code>length(dim(image))</code>.</p></li>
 </ol></div>

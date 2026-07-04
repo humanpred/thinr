@@ -40,7 +40,7 @@
 </blockquote>
 <div class="section level2">
 <h2 id="package-responsibility">Package responsibility<a class="anchor" aria-label="anchor" href="#package-responsibility"></a></h2>
-<p><code>thinr</code> provides binary image thinning (skeletonization) algorithms — Zhang-Suen, Guo-Hall, Lee (2-D), K3M, the parallel form commonly attributed to Hilditch, OPTA / SPTA, and Holt — behind a single dispatching API. Also provides the medial axis transform (Blum 1967) and a fast distance transform (Felzenszwalb-Huttenlocher 2012; classic two-pass sweep). <code><a href="reference/thinImage.html">thinImage()</a></code> is a signature-compatible drop-in for <code>EBImage::thinImage()</code> so callers can switch by changing the namespace prefix only. Per ADR-007 this is the <strong>one public CRAN package</strong> in the figureextract ecosystem; LGPL-3 is chosen for EBImage compatibility.</p>
+<p><code>thinr</code> provides binary image thinning (skeletonization) algorithms — Zhang-Suen, Guo-Hall, Lee (2-D), K3M, the parallel form commonly attributed to Hilditch, OPTA / SPTA, and Holt — behind a single dispatching API. Also provides the medial axis transform (Blum 1967) and a fast distance transform (Felzenszwalb-Huttenlocher 2012; classic two-pass sweep). <code>EBImage</code> provides binary morphology but no thinning operator, so <code>thinr</code> complements it rather than replacing any of its functions. Per ADR-007 this is the <strong>one public CRAN package</strong> in the figureextract ecosystem; LGPL-3 is chosen for EBImage compatibility.</p>
 </div>
 <div class="section level2">
 <h2 id="current-state">Current state<a class="anchor" aria-label="anchor" href="#current-state"></a></h2>
@@ -117,8 +117,6 @@
 <ul><li>
 <code>thin.R</code> — <code><a href="reference/thin.html">thin()</a></code> dispatching function and the <code>as_binary_matrix()</code> / <code>restore_storage()</code> coercion helpers.</li>
 <li>
-<code>thin_image.R</code> — <code><a href="reference/thinImage.html">thinImage()</a></code> drop-in.</li>
-<li>
 <code>distance_transform.R</code> — exported wrapper for <code>.distance_transform_cpp</code>.</li>
 <li>
 <code>medial_axis.R</code> — exported wrapper for <code>.medial_axis_cpp</code>.</li>
@@ -129,7 +127,7 @@
 </ul></div>
 <div class="section level2">
 <h2 id="public-api-surface">Public API surface<a class="anchor" aria-label="anchor" href="#public-api-surface"></a></h2>
-<ul><li>Exported: <code><a href="reference/thin.html">thin()</a></code>, <code><a href="reference/thinImage.html">thinImage()</a></code>, <code><a href="reference/medial_axis.html">medial_axis()</a></code>, <code><a href="reference/distance_transform.html">distance_transform()</a></code>.</li>
+<ul><li>Exported: <code><a href="reference/thin.html">thin()</a></code>, <code><a href="reference/medial_axis.html">medial_axis()</a></code>, <code><a href="reference/distance_transform.html">distance_transform()</a></code>.</li>
 <li>Internal: <code>as_binary_matrix()</code>, <code>restore_storage()</code> (helpers; not exported).</li>
 </ul></div>
 <div class="section level2">

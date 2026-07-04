@@ -5,11 +5,6 @@
 - [`thin()`](https://humanpred.github.io/thinr/reference/thin.md) : Thin
   (skeletonize) a binary image
 
-- [`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
-  :
-
-  Drop-in replacement for `EBImage::thinImage`
-
 ## Medial axis and distance transform
 
 - [`medial_axis()`](https://humanpred.github.io/thinr/reference/medial_axis.md)

@@ -9,7 +9,7 @@ function, plus the medial axis transform and a fast distance transform.
 
 - `zhang_suen` — Zhang & Suen (1984)
   [doi:10.1145/357994.358023](https://doi.org/10.1145/357994.358023) .
-  Default; matches `EBImage::thinImage`.
+  Default.
 
 - `guo_hall` — Guo & Hall (1989)
   [doi:10.1145/62065.62074](https://doi.org/10.1145/62065.62074) . Often
@@ -51,13 +51,13 @@ for guidance.
   Manhattan, or Chessboard distance from each foreground pixel to the
   nearest background pixel.
 
-## Drop-in compatibility
+## Relationship to EBImage
 
-[`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
-matches the signature of `EBImage::thinImage()`. Code that uses
-`EBImage::thinImage` can switch to
-[`thinr::thinImage`](https://humanpred.github.io/thinr/reference/thinImage.md)
-with no other changes.
+`EBImage`, the dominant image-processing package in R/Bioconductor,
+supplies binary morphology (`dilate()`, `erode()`, `distmap()`,
+`watershed()`) but no thinning / skeletonization operator. `thinr` fills
+that gap with a small, dependency-light, LGPL-3 package (the same
+licence as `EBImage`).
 
 ## See also
 

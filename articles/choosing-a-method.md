@@ -18,10 +18,7 @@ algorithms `thinr` provides.
 | `opta` | Naccache & Shinghal (1984) | Safe-point thinning (SPTA) |
 | `holt` | Holt, Stewart, Clint & Perrott (1987) | One subcycle with edge information on neighbours |
 
-`zhang_suen` is the default and matches `EBImage::thinImage()` behavior.
-The
-[`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
-wrapper is provided as a drop-in replacement.
+`zhang_suen` is the default.
 
 `lee` is a 2-D adaptation of Lee’s original 3-D algorithm. The 3-D case
 (volumetric thinning) is not implemented in this release.
@@ -170,8 +167,7 @@ the bottom. Differences show up on more complex shapes:
 ## When to use which
 
 - **`zhang_suen`** — the default. Most predictable behavior. Use for
-  general purpose thinning and for compatibility with code that
-  previously used `EBImage::thinImage()`.
+  general purpose thinning.
 - **`guo_hall`** — try this if your skeletons have lots of diagonal
   features and Zhang-Suen is breaking them at corners.
 - **`lee`** — when you want directional processing (four sub-iterations
@@ -282,10 +278,8 @@ Rosenfeld and Pfaltz (1968) two-pass sweep.
 
 ## Inputs and outputs
 
-[`thin()`](https://humanpred.github.io/thinr/reference/thin.md),
-[`medial_axis()`](https://humanpred.github.io/thinr/reference/medial_axis.md),
-and
-[`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
+[`thin()`](https://humanpred.github.io/thinr/reference/thin.md) and
+[`medial_axis()`](https://humanpred.github.io/thinr/reference/medial_axis.md)
 accept logical, integer, and numeric matrices. Non-zero values are
 foreground. The return matrix matches the storage mode of the input —
 logical in, logical out; integer in, integer out; numeric in, numeric

@@ -117,9 +117,7 @@ algorithms <code>thinr</code> provides.</p>
 </tr>
 </tbody>
 </table>
-<p><code>zhang_suen</code> is the default and matches
-<code>EBImage::thinImage()</code> behavior. The <code><a href="../reference/thinImage.html">thinImage()</a></code>
-wrapper is provided as a drop-in replacement.</p>
+<p><code>zhang_suen</code> is the default.</p>
 <p><code>lee</code> is a 2-D adaptation of Lee’s original 3-D algorithm.
 The 3-D case (volumetric thinning) is not implemented in this
 release.</p>
@@ -260,9 +258,7 @@ specifically designed to preserve 2-pixel-wide lines.</li>
 <ul>
 <li>
 <strong><code>zhang_suen</code></strong> — the default. Most
-predictable behavior. Use for general purpose thinning and for
-compatibility with code that previously used
-<code>EBImage::thinImage()</code>.</li>
+predictable behavior. Use for general purpose thinning.</li>
 <li>
 <strong><code>guo_hall</code></strong> — try this if your skeletons
 have lots of diagonal features and Zhang-Suen is breaking them at
@@ -373,11 +369,10 @@ Rosenfeld and Pfaltz (1968) two-pass sweep.</p>
 <div class="section level2">
 <h2 id="inputs-and-outputs">Inputs and outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs"></a>
 </h2>
-<p><code><a href="../reference/thin.html">thin()</a></code>, <code><a href="../reference/medial_axis.html">medial_axis()</a></code>, and
-<code><a href="../reference/thinImage.html">thinImage()</a></code> accept logical, integer, and numeric matrices.
-Non-zero values are foreground. The return matrix matches the storage
-mode of the input — logical in, logical out; integer in, integer out;
-numeric in, numeric out.</p>
+<p><code><a href="../reference/thin.html">thin()</a></code> and <code><a href="../reference/medial_axis.html">medial_axis()</a></code> accept logical,
+integer, and numeric matrices. Non-zero values are foreground. The
+return matrix matches the storage mode of the input — logical in,
+logical out; integer in, integer out; numeric in, numeric out.</p>
 <p><code><a href="../reference/distance_transform.html">distance_transform()</a></code> always returns a numeric
 matrix.</p>
 <p>Higher-dimensional arrays (e.g. 3-D volumes) are not yet

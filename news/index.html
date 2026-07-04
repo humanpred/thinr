@@ -34,10 +34,21 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="thinr-development-version">thinr (development version)<a class="anchor" aria-label="anchor" href="#thinr-development-version"></a></h2>
+<p>Correctness fixes from the figureextract ecosystem review (2026-07-03). All are boundary conditions the published algorithms assume away; see the new <code><a href="../articles/correctness-properties.html">vignette("correctness-properties")</a></code> for the guarantees they restore.</p>
+<ul><li><p><code><a href="../reference/thin.html">thin()</a></code> now skeletonises shapes that touch the matrix border correctly. The kernels inspect an 8-neighbourhood and so never deleted pixels in the outermost row or column, leaving edge-touching shapes two to three pixels thick; <code><a href="../reference/thin.html">thin()</a></code> now pads the image with a one-pixel background margin and crops it back, so a shape thins identically whether or not it touches the frame. Applies to all seven methods (#F012).</p></li>
+<li><p><code>thin(method = "opta")</code> now keeps two-pixel-wide strokes connected. The SPTA kernel evaluated all four contour directions against the pre-cycle snapshot and deleted them in one batch, so both sides of a 2px stroke were removed together and the skeleton fragmented (a 2×9 bar collapsed to its four corner pixels). Deletion is now sequential per direction, as Naccache &amp; Shinghal’s two-scan formulation requires (#F011).</p></li>
+<li><p><code>distance_transform(metric = "manhattan" | "chessboard")</code> now returns <code>Inf</code> for a fully-foreground image (no background pixel exists), matching the <code>"euclidean"</code> metric and <code>EBImage::distmap()</code>. The two-pass metrics previously seeded foreground with a finite sentinel that leaked out as a plausible-looking but meaningless finite distance (#F015).</p></li>
+<li><p><code><a href="../reference/thin.html">thin()</a></code>, <code><a href="../reference/distance_transform.html">distance_transform()</a></code>, and <code><a href="../reference/medial_axis.html">medial_axis()</a></code> now reject <code>NA</code> input with a clear error at the coercion boundary instead of silently turning it into <code>NA_integer_</code> (<code>INT_MIN</code>) in the C++ kernels (#F016).</p></li>
+<li><p>Added a connectivity-preservation property test across all seven methods and tightened the Holt straight-line test (#F013).</p></li>
+<li><p>Removed <code>thinImage()</code>. Use <code><a href="../reference/thin.html">thin()</a></code> (Zhang-Suen is the default method).</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="thinr-020">thinr 0.2.0<a class="anchor" aria-label="anchor" href="#thinr-020"></a></h2><p class="text-muted">CRAN release: 2026-05-27</p>
 <p>Initial CRAN release.</p>
 </div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

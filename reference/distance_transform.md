@@ -15,7 +15,8 @@ distance_transform(image, metric = c("euclidean", "manhattan", "chessboard"))
 
   A binary image: a matrix where non-zero values are foreground and zero
   values are background. Logical, integer, and numeric inputs are
-  accepted.
+  accepted. `NA` values are rejected with an error rather than silently
+  coerced.
 
 - metric:
 
@@ -34,6 +35,11 @@ distance_transform(image, metric = c("euclidean", "manhattan", "chessboard"))
 
 A numeric matrix of the same shape as `image`. Background pixels are 0;
 foreground pixels carry their distance to the nearest background pixel.
+When the image is entirely foreground (no background pixel exists) every
+pixel is `Inf`, consistently across all three metrics — the distance to
+a non-existent nearest background pixel is unbounded, matching
+`EBImage::distmap()`. Only pixels count as background; the region
+outside the matrix is not treated as an implicit background border.
 
 ## References
 

@@ -57,17 +57,20 @@ supported thinning algorithms.</p>
 <dl><dt id="arg-image">image<a class="anchor" aria-label="anchor" href="#arg-image"></a></dt>
 <dd><p>A binary image: a matrix or array where non-zero values
 are foreground and zero values are background. Logical, integer, and
-numeric inputs are all accepted. The image is treated as a 2-D
-matrix; arrays with more than two dimensions are not yet supported.</p></dd>
+numeric inputs are all accepted. <code>NA</code> values are rejected with an
+error rather than silently coerced (a background pixel would change
+the skeleton). The image is treated as a 2-D matrix; arrays with
+more than two dimensions are not yet supported.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Algorithm to use. One of <code>"zhang_suen"</code> (default,
-matches <code>EBImage::thinImage</code>), <code>"guo_hall"</code>, <code>"lee"</code> (2-D
-adaptation of Lee, Kashyap &amp; Chu 1994), <code>"k3m"</code> (Saeed et al.
-2010), <code>"hilditch"</code> (Hilditch 1969), <code>"opta"</code> (Naccache &amp;
-Shinghal 1984), or <code>"holt"</code> (Holt et al. 1987).
-See <code><a href="../articles/choosing-a-method.html">vignette("choosing-a-method")</a></code> for guidance on which to pick.</p></dd>
+<dd><p>Algorithm to use. One of <code>"zhang_suen"</code> (default),
+<code>"guo_hall"</code>, <code>"lee"</code> (2-D adaptation of Lee, Kashyap &amp; Chu 1994),
+<code>"k3m"</code> (Saeed et al. 2010), <code>"hilditch"</code> (Hilditch 1969), <code>"opta"</code>
+(Naccache &amp; Shinghal 1984), or <code>"holt"</code> (Holt et al. 1987).
+See <code><a href="../articles/choosing-a-method.html">vignette("choosing-a-method")</a></code> for guidance on which to pick,
+and <code><a href="../articles/correctness-properties.html">vignette("correctness-properties")</a></code> for the edge-handling and
+connectivity guarantees shared by every method.</p></dd>
 
 
 <dt id="arg-max-iter">max_iter<a class="anchor" aria-label="anchor" href="#arg-max-iter"></a></dt>
@@ -81,6 +84,28 @@ a safety bound against pathological inputs.</p></dd>
     <p>A matrix of the same shape and storage mode as <code>image</code>, with
 foreground pixels marking the thinned skeleton and the rest set to
 background.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="edge-handling">Edge handling<a class="anchor" aria-label="anchor" href="#edge-handling"></a></h2>
+
+
+<p>Every kernel inspects an 8-neighbourhood, so a naive implementation
+can never delete a pixel in the outermost row or column and leaves
+shapes that touch the matrix border two or three pixels thick. <code>thin()</code>
+therefore surrounds the image with a one-pixel background margin before
+thinning and crops it back afterwards, so a shape is skeletonised
+identically whether or not it touches the frame. This applies uniformly
+to all seven methods.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="connectivity">Connectivity<a class="anchor" aria-label="anchor" href="#connectivity"></a></h2>
+
+
+<p>Thinning only ever deletes foreground pixels, and each method deletes
+in an order that keeps 8-connected components connected: an object that
+starts as one connected component thins to one connected component. In
+particular a two-pixel-wide stroke thins to a connected one-pixel line
+rather than fragmenting. See <code><a href="../articles/correctness-properties.html">vignette("correctness-properties")</a></code>.</p>
     </div>
 
     <div class="section level2">

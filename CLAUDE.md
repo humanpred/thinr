@@ -12,12 +12,10 @@ Zhang-Suen, Guo-Hall, Lee (2-D), K3M, the parallel form commonly
 attributed to Hilditch, OPTA / SPTA, and Holt — behind a single
 dispatching API. Also provides the medial axis transform (Blum 1967) and
 a fast distance transform (Felzenszwalb-Huttenlocher 2012; classic
-two-pass sweep).
-[`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
-is a signature-compatible drop-in for `EBImage::thinImage()` so callers
-can switch by changing the namespace prefix only. Per ADR-007 this is
-the **one public CRAN package** in the figureextract ecosystem; LGPL-3
-is chosen for EBImage compatibility.
+two-pass sweep). `EBImage` provides binary morphology but no thinning
+operator, so `thinr` complements it rather than replacing any of its
+functions. Per ADR-007 this is the **one public CRAN package** in the
+figureextract ecosystem; LGPL-3 is chosen for EBImage compatibility.
 
 ## Current state
 
@@ -128,9 +126,6 @@ R sources in `R/`:
   [`thin()`](https://humanpred.github.io/thinr/reference/thin.md)
   dispatching function and the `as_binary_matrix()` /
   `restore_storage()` coercion helpers.
-- `thin_image.R` —
-  [`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
-  drop-in.
 - `distance_transform.R` — exported wrapper for
   `.distance_transform_cpp`.
 - `medial_axis.R` — exported wrapper for `.medial_axis_cpp`.
@@ -141,7 +136,6 @@ R sources in `R/`:
 
 - Exported:
   [`thin()`](https://humanpred.github.io/thinr/reference/thin.md),
-  [`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md),
   [`medial_axis()`](https://humanpred.github.io/thinr/reference/medial_axis.md),
   [`distance_transform()`](https://humanpred.github.io/thinr/reference/distance_transform.md).
 - Internal: `as_binary_matrix()`, `restore_storage()` (helpers; not

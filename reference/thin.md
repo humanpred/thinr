@@ -19,18 +19,22 @@ thin(
 
   A binary image: a matrix or array where non-zero values are foreground
   and zero values are background. Logical, integer, and numeric inputs
-  are all accepted. The image is treated as a 2-D matrix; arrays with
-  more than two dimensions are not yet supported.
+  are all accepted. `NA` values are rejected with an error rather than
+  silently coerced (a background pixel would change the skeleton). The
+  image is treated as a 2-D matrix; arrays with more than two dimensions
+  are not yet supported.
 
 - method:
 
-  Algorithm to use. One of `"zhang_suen"` (default, matches
-  `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D adaptation of Lee,
-  Kashyap & Chu 1994), `"k3m"` (Saeed et al. 2010), `"hilditch"`
-  (Hilditch 1969), `"opta"` (Naccache & Shinghal 1984), or `"holt"`
-  (Holt et al. 1987). See
+  Algorithm to use. One of `"zhang_suen"` (default), `"guo_hall"`,
+  `"lee"` (2-D adaptation of Lee, Kashyap & Chu 1994), `"k3m"` (Saeed et
+  al. 2010), `"hilditch"` (Hilditch 1969), `"opta"` (Naccache & Shinghal
+  1984), or `"holt"` (Holt et al. 1987). See
   [`vignette("choosing-a-method")`](https://humanpred.github.io/thinr/articles/choosing-a-method.md)
-  for guidance on which to pick.
+  for guidance on which to pick, and
+  [`vignette("correctness-properties")`](https://humanpred.github.io/thinr/articles/correctness-properties.md)
+  for the edge-handling and connectivity guarantees shared by every
+  method.
 
 - max_iter:
 
@@ -42,6 +46,25 @@ thin(
 
 A matrix of the same shape and storage mode as `image`, with foreground
 pixels marking the thinned skeleton and the rest set to background.
+
+## Edge handling
+
+Every kernel inspects an 8-neighbourhood, so a naive implementation can
+never delete a pixel in the outermost row or column and leaves shapes
+that touch the matrix border two or three pixels thick. `thin()`
+therefore surrounds the image with a one-pixel background margin before
+thinning and crops it back afterwards, so a shape is skeletonised
+identically whether or not it touches the frame. This applies uniformly
+to all seven methods.
+
+## Connectivity
+
+Thinning only ever deletes foreground pixels, and each method deletes in
+an order that keeps 8-connected components connected: an object that
+starts as one connected component thins to one connected component. In
+particular a two-pixel-wide stroke thins to a connected one-pixel line
+rather than fragmenting. See
+[`vignette("correctness-properties")`](https://humanpred.github.io/thinr/articles/correctness-properties.md).
 
 ## Examples
 

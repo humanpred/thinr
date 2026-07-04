@@ -7,8 +7,9 @@
 ## Purpose
 
 Implement multiple binary image thinning algorithms behind a single
-dispatching API. Drop-in replacement for `EBImage::thinImage()`.
-Designed to be small, focused, CRAN-quality, and
+dispatching API. Fills the thinning / skeletonization gap that `EBImage`
+(binary morphology, but no thinning operator) leaves in the R
+image-processing stack. Designed to be small, focused, CRAN-quality, and
 `EBImage`-license-compatible (LGPL-3).
 
 ## Pipeline shape
@@ -47,20 +48,15 @@ algorithm.
     and Windows without system libraries beyond the C++ toolchain.
 
 2.  **API stability.**
-    [`thin()`](https://humanpred.github.io/thinr/reference/thin.md) and
-    [`thinImage()`](https://humanpred.github.io/thinr/reference/thinImage.md)
-    are the public surface. Any signature change is a major version
-    bump.
+    [`thin()`](https://humanpred.github.io/thinr/reference/thin.md) is
+    the public thinning surface. Any signature change is a major version
+    bump. The default algorithm is locked to Zhang-Suen.
 
-3.  **Drop-in compatibility.** `thinImage(x)` must return the same shape
-    and storage mode as `EBImage::thinImage(x)` for the same input. The
-    default algorithm is therefore locked to Zhang-Suen.
-
-4.  **Stubs error, don’t silently fall back.** Lee and K3M throw with a
+3.  **Stubs error, don’t silently fall back.** Lee and K3M throw with a
     message that names the planned version. Silent fall-backs to
     Zhang-Suen would hide the limitation.
 
-5.  **2-D for now.** Higher-dimensional arrays are explicitly rejected.
+4.  **2-D for now.** Higher-dimensional arrays are explicitly rejected.
     The Lee implementation in v0.2 introduces 3-D support; the
     dispatcher will route based on `length(dim(image))`.
 

@@ -53,7 +53,8 @@ background pixel, under one of three standard metrics.</p>
 <dl><dt id="arg-image">image<a class="anchor" aria-label="anchor" href="#arg-image"></a></dt>
 <dd><p>A binary image: a matrix where non-zero values are
 foreground and zero values are background. Logical, integer, and
-numeric inputs are accepted.</p></dd>
+numeric inputs are accepted. <code>NA</code> values are rejected with an error
+rather than silently coerced.</p></dd>
 
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
@@ -71,7 +72,12 @@ two-pass sweep with 8-connected propagation.</p></li>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A numeric matrix of the same shape as <code>image</code>. Background
 pixels are 0; foreground pixels carry their distance to the
-nearest background pixel.</p>
+nearest background pixel. When the image is entirely foreground
+(no background pixel exists) every pixel is <code>Inf</code>, consistently
+across all three metrics — the distance to a non-existent nearest
+background pixel is unbounded, matching <code>EBImage::distmap()</code>. Only
+pixels count as background; the region outside the matrix is not
+treated as an implicit background border.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

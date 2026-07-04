@@ -2,9 +2,11 @@
 
 Binary image thinning (skeletonization) algorithms for R, plus the
 medial axis transform and a fast Euclidean / Manhattan / Chessboard
-distance transform. Designed as a drop-in replacement for
-`EBImage::thinImage()` with six additional thinning algorithms behind a
-single dispatching function.
+distance transform. Seven thinning algorithms sit behind a single
+dispatching function. `EBImage`, the dominant R/Bioconductor image
+toolkit, provides binary morphology (`dilate`, `erode`, `distmap`,
+`watershed`) but no thinning operator; `thinr` fills that gap in a
+small, dependency-light package.
 
 ## Installation
 
@@ -27,16 +29,13 @@ library(thinr)
 m <- matrix(0L, 11, 11)
 m[3:9, 3:9] <- 1L      # 7x7 solid square
 
-# Default: Zhang-Suen (matches EBImage::thinImage)
+# Default: Zhang-Suen
 thin(m)
 
 # Or pick an algorithm explicitly
 thin(m, method = "guo_hall")
 thin(m, method = "hilditch")
 thin(m, method = "holt")
-
-# Drop-in for EBImage::thinImage()
-thinImage(m)
 
 # Medial axis transform (returns binary skeleton + per-pixel width)
 medial_axis(m)
@@ -52,7 +51,7 @@ distance_transform(m, metric = "chessboard")
 
 | Method | Reference |
 |----|----|
-| `zhang_suen` | Zhang, T. Y. & Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. *Communications of the ACM*, 27(3), 236–239. [doi:10.1145/357994.358023](https://doi.org/10.1145/357994.358023). *Default; matches `EBImage::thinImage()`.* |
+| `zhang_suen` | Zhang, T. Y. & Suen, C. Y. (1984). A fast parallel algorithm for thinning digital patterns. *Communications of the ACM*, 27(3), 236–239. [doi:10.1145/357994.358023](https://doi.org/10.1145/357994.358023). *Default.* |
 | `guo_hall` | Guo, Z. & Hall, R. W. (1989). Parallel thinning with two-subiteration algorithms. *Communications of the ACM*, 32(3), 359–373. [doi:10.1145/62065.62074](https://doi.org/10.1145/62065.62074). |
 | `lee` | Lee, T.-C., Kashyap, R. L. & Chu, C.-N. (1994). Building skeleton models via 3-D medial surface axis thinning algorithms. *CVGIP: Graphical Models and Image Processing*, 56(6), 462–478. [doi:10.1006/cgip.1994.1042](https://doi.org/10.1006/cgip.1994.1042). 2-D adaptation; the 3-D form is not implemented. |
 | `k3m` | Saeed, K., Tabędzki, M., Rybnik, M. & Adamski, M. (2010). K3M: A universal algorithm for image skeletonization and a review of thinning techniques. *International Journal of Applied Mathematics and Computer Science*, 20(2), 317–335. [doi:10.2478/v10006-010-0024-4](https://doi.org/10.2478/v10006-010-0024-4). Lookup tables `A_0…A_5` reproduced from the paper. |
@@ -80,6 +79,6 @@ for guidance on choosing among the methods.
 
 ## License
 
-LGPL-3. Chosen for drop-in compatibility with `EBImage` (which is LGPL)
-so that `EBImage` can optionally depend on `thinr` and retire its
-in-tree thinning code.
+LGPL-3, the same licence as `EBImage`, so that an `EBImage`-based
+pipeline (or `EBImage` itself) can depend on `thinr` for the thinning
+operator `EBImage` does not provide, without licence friction.

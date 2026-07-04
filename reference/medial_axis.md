@@ -18,7 +18,7 @@ medial_axis(image, return_distance = FALSE)
 
   A binary image: a matrix where non-zero values are foreground and zero
   values are background. Logical, integer, and numeric inputs are
-  accepted.
+  accepted; `NA` values are not.
 
 - return_distance:
 

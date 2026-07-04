@@ -57,8 +57,7 @@ fast distance transform.</p>
 
 <ul><li><p><code>zhang_suen</code> — Zhang &amp; Suen (1984)
 <a href="https://doi.org/10.1145/357994.358023" class="external-link">doi:10.1145/357994.358023</a>
-. Default; matches
-<code>EBImage::thinImage</code>.</p></li>
+. Default.</p></li>
 <li><p><code>guo_hall</code> — Guo &amp; Hall (1989) <a href="https://doi.org/10.1145/62065.62074" class="external-link">doi:10.1145/62065.62074</a>
 . Often
 better corner preservation on diagonal features.</p></li>
@@ -92,13 +91,15 @@ transform. Optionally returns the per-pixel distance.</p></li>
 from each foreground pixel to the nearest background pixel.</p></li>
 </ul></div>
     <div class="section level2">
-    <h2 id="drop-in-compatibility">Drop-in compatibility<a class="anchor" aria-label="anchor" href="#drop-in-compatibility"></a></h2>
+    <h2 id="relationship-to-ebimage">Relationship to EBImage<a class="anchor" aria-label="anchor" href="#relationship-to-ebimage"></a></h2>
 
 
 
-<p><code><a href="thinImage.html">thinImage()</a></code> matches the signature of <code>EBImage::thinImage()</code>. Code
-that uses <code>EBImage::thinImage</code> can switch to <code><a href="thinImage.html">thinr::thinImage</a></code> with
-no other changes.</p>
+<p><code>EBImage</code>, the dominant image-processing package in R/Bioconductor,
+supplies binary morphology (<code>dilate()</code>, <code>erode()</code>, <code>distmap()</code>,
+<code>watershed()</code>) but no thinning / skeletonization operator. <code>thinr</code>
+fills that gap with a small, dependency-light, LGPL-3 package (the
+same licence as <code>EBImage</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
