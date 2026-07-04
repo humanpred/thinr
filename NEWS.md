@@ -28,8 +28,23 @@ new `vignette("correctness-properties")` for the guarantees they restore.
   input with a clear error at the coercion boundary instead of silently
   turning it into `NA_integer_` (`INT_MIN`) in the C++ kernels (#F016).
 
+* `thin(method = "hilditch")` now thins junctions to the published parallel
+  form. The look-ahead conditions 3 and 4 skip deleting a pixel only when a
+  cardinal neighbour has crossing number `A == 1` on the current image; the
+  kernel had compared the look-ahead crossing number (computed with the
+  centre already removed) against 1, which is strictly stronger and also
+  spared junction neighbours where `A >= 2`, leaving a redundant pixel beside
+  the junction. Skeletons are now equal to or thinner than before, never
+  thicker (verified against a reference implementation of the published form
+  over random images) (#F014).
+
 * Added a connectivity-preservation property test across all seven methods
   and tightened the Holt straight-line test (#F013).
+
+* Documented and pinned the isolated-2×2-block behaviour: the default
+  `zhang_suen` erases an isolated 2×2 block entirely while `guo_hall` keeps
+  one pixel. See `vignette("choosing-a-method")` for guidance on small-blob
+  masks (#F017).
 
 * Removed `thinImage()`. Use `thin()` (Zhang-Suen is the default method).
 
