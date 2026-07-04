@@ -19,10 +19,10 @@ Description: Thinning (skeletonization) algorithms for binary raster
     (1987) <doi:10.1145/12527.12531>. Also provides the medial axis
     transform (Blum 1967) and a distance transform implementation
     following Felzenszwalb and Huttenlocher (2012)
-    <doi:10.4086/toc.2012.v008a019>. The drop-in thinImage() matches
-    the signature of thinImage() in the 'EBImage' package on
-    Bioconductor so existing code can switch parsers without changes.
-    The wider thin() API selects the algorithm by name.
+    <doi:10.4086/toc.2012.v008a019>. The thin() API selects the
+    algorithm by name; thinImage() is a convenience wrapper for the
+    Zhang-Suen default. Complements the morphology in the 'EBImage'
+    package, which does not provide a thinning operator.
 License: LGPL-3
 Encoding: UTF-8
 Depends:

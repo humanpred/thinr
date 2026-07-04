@@ -2,7 +2,7 @@
 % Please edit documentation in R/thin_image.R
 \name{thinImage}
 \alias{thinImage}
-\title{Drop-in replacement for \code{EBImage::thinImage}}
+\title{Thin a binary image with the default Zhang-Suen algorithm}
 \usage{
 thinImage(x)
 }
@@ -14,14 +14,10 @@ argument.}
 The thinned skeleton in the same storage mode as \code{x}.
 }
 \description{
-Applies Zhang-Suen thinning to a binary image. Provided as a
-signature-compatible alternative to \code{EBImage::thinImage()} so callers
-can switch from \code{EBImage} to \code{thinr} by changing the namespace prefix
-only.
-}
-\details{
-For access to the other algorithms (Guo-Hall, and eventually Lee /
-K3M), use \code{\link[=thin]{thin()}}.
+A convenience wrapper for \code{thin(x, method = "zhang_suen")}, provided
+under a short single-argument name for the common case. Use \code{\link[=thin]{thin()}}
+directly to select any of the other algorithms (Guo-Hall, Lee, K3M,
+Hilditch, OPTA, Holt).
 }
 \examples{
 m <- matrix(c(0, 1, 1, 1, 0,

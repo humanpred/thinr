@@ -121,8 +121,10 @@ public, if ever.
 
 ## Notes for the submission reviewer
 
-- `EBImage::thinImage()` provides a Zhang-Suen implementation;
-  `thinr::thinImage()` is a signature-compatible drop-in. The
+- `EBImage` provides binary morphology (`dilate`, `erode`, `distmap`,
+  `watershed`) but no thinning / skeletonization operator; `thinr`
+  fills that gap. `thinr::thinImage()` is a convenience alias for the
+  Zhang-Suen default, not a wrapper of any `EBImage` function. The
   mention of `EBImage` in the Description field is informational; no
   `Imports` or `Suggests` link to it.
 - The K3M lookup tables (`A_0`, `A_1`, ..., `A_5`, `A_1pix`) in

@@ -9,8 +9,7 @@
 #' @section Thinning algorithms (`thin(method = ...)`):
 #'
 #' - `zhang_suen` — Zhang & Suen (1984)
-#'   \doi{10.1145/357994.358023}. Default; matches
-#'   `EBImage::thinImage`.
+#'   \doi{10.1145/357994.358023}. Default.
 #' - `guo_hall` — Guo & Hall (1989) \doi{10.1145/62065.62074}. Often
 #'   better corner preservation on diagonal features.
 #' - `lee` — Lee, Kashyap & Chu (1994) \doi{10.1006/cgip.1994.1042},
@@ -38,11 +37,14 @@
 #'   2012, linear-time separable), Manhattan, or Chessboard distance
 #'   from each foreground pixel to the nearest background pixel.
 #'
-#' @section Drop-in compatibility:
+#' @section Relationship to EBImage:
 #'
-#' [thinImage()] matches the signature of `EBImage::thinImage()`. Code
-#' that uses `EBImage::thinImage` can switch to `thinr::thinImage` with
-#' no other changes.
+#' `EBImage`, the dominant image-processing package in R/Bioconductor,
+#' supplies binary morphology (`dilate()`, `erode()`, `distmap()`,
+#' `watershed()`) but no thinning / skeletonization operator. `thinr`
+#' fills that gap with a small, dependency-light, LGPL-3 package (the
+#' same licence as `EBImage`). [thinImage()] is a convenience alias for
+#' the Zhang-Suen default.
 #'
 #' @keywords internal
 #' @useDynLib thinr, .registration = TRUE

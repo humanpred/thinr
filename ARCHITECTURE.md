@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Implement multiple binary image thinning algorithms behind a single dispatching API. Drop-in replacement for `EBImage::thinImage()`. Designed to be small, focused, CRAN-quality, and `EBImage`-license-compatible (LGPL-3).
+Implement multiple binary image thinning algorithms behind a single dispatching API. Fills the thinning / skeletonization gap that `EBImage` (binary morphology, but no thinning operator) leaves in the R image-processing stack. Designed to be small, focused, CRAN-quality, and `EBImage`-license-compatible (LGPL-3).
 
 ## Pipeline shape
 
@@ -39,7 +39,7 @@ The dispatcher (`thin()`) selects the C++ implementation by name and handles the
 
 2. **API stability.** `thin()` and `thinImage()` are the public surface. Any signature change is a major version bump.
 
-3. **Drop-in compatibility.** `thinImage(x)` must return the same shape and storage mode as `EBImage::thinImage(x)` for the same input. The default algorithm is therefore locked to Zhang-Suen.
+3. **`thinImage()` alias stability.** `thinImage(x)` is a convenience alias for `thin(x, method = "zhang_suen")` and must stay equivalent to it: same shape and storage mode out as in. The default algorithm is locked to Zhang-Suen.
 
 4. **Stubs error, don't silently fall back.** Lee and K3M throw with a message that names the planned version. Silent fall-backs to Zhang-Suen would hide the limitation.
 

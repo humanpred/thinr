@@ -1,12 +1,9 @@
-#' Drop-in replacement for `EBImage::thinImage`
+#' Thin a binary image with the default Zhang-Suen algorithm
 #'
-#' Applies Zhang-Suen thinning to a binary image. Provided as a
-#' signature-compatible alternative to `EBImage::thinImage()` so callers
-#' can switch from `EBImage` to `thinr` by changing the namespace prefix
-#' only.
-#'
-#' For access to the other algorithms (Guo-Hall, and eventually Lee /
-#' K3M), use [thin()].
+#' A convenience wrapper for `thin(x, method = "zhang_suen")`, provided
+#' under a short single-argument name for the common case. Use [thin()]
+#' directly to select any of the other algorithms (Guo-Hall, Lee, K3M,
+#' Hilditch, OPTA, Holt).
 #'
 #' @param x A binary image. Same constraints as [thin()]'s `image`
 #'   argument.
