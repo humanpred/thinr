@@ -118,14 +118,18 @@ n_components <- function(m) {
   for (i in seq_len(nrow(m))) for (j in seq_len(ncol(m))) {
     if (m[i, j] && lab[i, j] == 0L) {
       k <- k + 1L
-      stack <- list(c(i, j)); lab[i, j] <- k
+      stack <- list(c(i, j))
+      lab[i, j] <- k
       while (length(stack)) {
-        p <- stack[[length(stack)]]; stack[[length(stack)]] <- NULL
+        p <- stack[[length(stack)]]
+        stack[[length(stack)]] <- NULL
         for (di in -1:1) for (dj in -1:1) {
-          r <- p[1] + di; cc <- p[2] + dj
+          r <- p[1] + di
+          cc <- p[2] + dj
           if (r >= 1 && r <= nrow(m) && cc >= 1 && cc <= ncol(m) &&
-              m[r, cc] && lab[r, cc] == 0L) {
-            lab[r, cc] <- k; stack[[length(stack) + 1]] <- c(r, cc)
+                m[r, cc] && lab[r, cc] == 0L) {
+            lab[r, cc] <- k
+            stack[[length(stack) + 1]] <- c(r, cc)
           }
         }
       }
