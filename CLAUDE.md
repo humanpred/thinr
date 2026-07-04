@@ -4,7 +4,7 @@
 
 ## Package responsibility
 
-`thinr` provides binary image thinning (skeletonization) algorithms — Zhang-Suen, Guo-Hall, Lee (2-D), K3M, the parallel form commonly attributed to Hilditch, OPTA / SPTA, and Holt — behind a single dispatching API. Also provides the medial axis transform (Blum 1967) and a fast distance transform (Felzenszwalb-Huttenlocher 2012; classic two-pass sweep). `thinImage()` is a convenience alias for the Zhang-Suen default. `EBImage` provides binary morphology but no thinning operator, so `thinr` complements it rather than replacing any of its functions. Per ADR-007 this is the **one public CRAN package** in the figureextract ecosystem; LGPL-3 is chosen for EBImage compatibility.
+`thinr` provides binary image thinning (skeletonization) algorithms — Zhang-Suen, Guo-Hall, Lee (2-D), K3M, the parallel form commonly attributed to Hilditch, OPTA / SPTA, and Holt — behind a single dispatching API. Also provides the medial axis transform (Blum 1967) and a fast distance transform (Felzenszwalb-Huttenlocher 2012; classic two-pass sweep). `EBImage` provides binary morphology but no thinning operator, so `thinr` complements it rather than replacing any of its functions. Per ADR-007 this is the **one public CRAN package** in the figureextract ecosystem; LGPL-3 is chosen for EBImage compatibility.
 
 ## Current state
 
@@ -55,7 +55,6 @@ C++ sources in `src/`:
 R sources in `R/`:
 
 - `thin.R` — `thin()` dispatching function and the `as_binary_matrix()` / `restore_storage()` coercion helpers.
-- `thin_image.R` — `thinImage()` convenience alias for the Zhang-Suen default.
 - `distance_transform.R` — exported wrapper for `.distance_transform_cpp`.
 - `medial_axis.R` — exported wrapper for `.medial_axis_cpp`.
 - `thinr-package.R` — package-level Roxygen doc.
@@ -63,7 +62,7 @@ R sources in `R/`:
 
 ## Public API surface
 
-- Exported: `thin()`, `thinImage()`, `medial_axis()`, `distance_transform()`.
+- Exported: `thin()`, `medial_axis()`, `distance_transform()`.
 - Internal: `as_binary_matrix()`, `restore_storage()` (helpers; not exported).
 
 ## Extension points

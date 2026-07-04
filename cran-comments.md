@@ -13,7 +13,7 @@ feedback on an earlier submission.
 >  -> 'thinImage()' --> thinImage()"
 
 **Resolved.** All function-name references in the Description field
-appear without single quotes: `thinImage()`, `thin()`. Package names
+appear without single quotes: `thin()`. Package names
 (`'EBImage'`) are kept in single quotes per CRAN convention.
 
 ### 2. References for algorithm methods
@@ -123,10 +123,9 @@ public, if ever.
 
 - `EBImage` provides binary morphology (`dilate`, `erode`, `distmap`,
   `watershed`) but no thinning / skeletonization operator; `thinr`
-  fills that gap. `thinr::thinImage()` is a convenience alias for the
-  Zhang-Suen default, not a wrapper of any `EBImage` function. The
-  mention of `EBImage` in the Description field is informational; no
-  `Imports` or `Suggests` link to it.
+  fills that gap via `thinr::thin()`, which is not a wrapper of any
+  `EBImage` function. The mention of `EBImage` in the Description
+  field is informational; no `Imports` or `Suggests` link to it.
 - The K3M lookup tables (`A_0`, `A_1`, ..., `A_5`, `A_1pix`) in
   `src/k3m.cpp` are reproduced verbatim from Saeed et al. (2010),
   Section 3.3, page 327. The paper itself is in

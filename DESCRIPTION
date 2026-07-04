@@ -20,9 +20,9 @@ Description: Thinning (skeletonization) algorithms for binary raster
     transform (Blum 1967) and a distance transform implementation
     following Felzenszwalb and Huttenlocher (2012)
     <doi:10.4086/toc.2012.v008a019>. The thin() API selects the
-    algorithm by name; thinImage() is a convenience wrapper for the
-    Zhang-Suen default. Complements the morphology in the 'EBImage'
-    package, which does not provide a thinning operator.
+    algorithm by name, defaulting to Zhang-Suen. Complements the
+    morphology in the 'EBImage' package, which does not provide a
+    thinning operator.
 License: LGPL-3
 Encoding: UTF-8
 Depends:

@@ -253,14 +253,6 @@ describe("topology is preserved on a small ring (hole stays a hole)", {
   }
 })
 
-describe("thinImage matches thin(method = 'zhang_suen')", {
-  it("on a solid square", {
-    img <- matrix(0L, nrow = 9, ncol = 9)
-    img[3:7, 3:7] <- 1L
-    expect_equal(thinImage(img), thin(img, method = "zhang_suen"))
-  })
-})
-
 describe("input coercion", {
   it("accepts a logical matrix and returns a logical matrix", {
     img <- matrix(FALSE, nrow = 5, ncol = 5)
@@ -517,21 +509,6 @@ describe("exact skeletons on small known shapes", {
     expected[3, 3] <- 1L
     expect_identical(thin(img, method = "guo_hall"), expected)
   })
-
-  it("thinImage matches its documented 3x5 example output exactly", {
-    # The 3x3 block touches the top and bottom matrix edges; it must
-    # thin to the same single centre pixel as the interior 3x3 block
-    # above, not keep its edge rows un-thinned.
-    img <- matrix(c(0, 1, 1, 1, 0,
-                    0, 1, 1, 1, 0,
-                    0, 1, 1, 1, 0),
-                  nrow = 3, byrow = TRUE)
-    expected <- matrix(c(0, 0, 0, 0, 0,
-                         0, 0, 1, 0, 0,
-                         0, 0, 0, 0, 0),
-                       nrow = 3, byrow = TRUE)
-    expect_identical(thinImage(img), expected)
-  })
 })
 
 describe("shapes touching the matrix edge are thinned like interior shapes", {
@@ -563,25 +540,4 @@ describe("shapes touching the matrix edge are thinned like interior shapes", {
       })
     })
   }
-})
-
-describe("thinImage drop-in", {
-  it("accepts a logical matrix", {
-    img <- matrix(FALSE, nrow = 5, ncol = 5)
-    img[2:4, 2:4] <- TRUE
-    sk <- thinImage(img)
-    expect_type(sk, "logical")
-    expect_equal(dim(sk), dim(img))
-  })
-  it("accepts a numeric matrix", {
-    img <- matrix(0, nrow = 5, ncol = 5)
-    img[2:4, 2:4] <- 1
-    sk <- thinImage(img)
-    expect_type(sk, "double")
-  })
-  it("matches thin(method = 'zhang_suen') on a logical input", {
-    img <- matrix(FALSE, nrow = 9, ncol = 9)
-    img[3:7, 3:7] <- TRUE
-    expect_equal(thinImage(img), thin(img, method = "zhang_suen"))
-  })
 })

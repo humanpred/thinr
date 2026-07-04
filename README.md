@@ -36,9 +36,6 @@ thin(m, method = "guo_hall")
 thin(m, method = "hilditch")
 thin(m, method = "holt")
 
-# thinImage() is a convenience alias for the Zhang-Suen default
-thinImage(m)
-
 # Medial axis transform (returns binary skeleton + per-pixel width)
 medial_axis(m)
 medial_axis(m, return_distance = TRUE)

@@ -31,6 +31,8 @@ new `vignette("correctness-properties")` for the guarantees they restore.
 * Added a connectivity-preservation property test across all seven methods
   and tightened the Holt straight-line test (#F013).
 
+* Removed `thinImage()`. Use `thin()` (Zhang-Suen is the default method).
+
 # thinr 0.2.0
 
 Initial CRAN release.

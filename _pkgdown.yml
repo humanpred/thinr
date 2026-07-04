@@ -7,7 +7,6 @@ reference:
   - title: "Thinning"
     contents:
       - thin
-      - thinImage
 
   - title: "Medial axis and distance transform"
     contents:

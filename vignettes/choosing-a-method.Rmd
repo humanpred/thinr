@@ -29,7 +29,7 @@ Thinning reduces a binary shape to a one-pixel-wide centerline that preserves to
 | `opta`        | Naccache & Shinghal (1984)               | Safe-point thinning (SPTA)                          |
 | `holt`        | Holt, Stewart, Clint & Perrott (1987)    | One subcycle with edge information on neighbours    |
 
-`zhang_suen` is the default. The `thinImage()` wrapper is a convenience alias for `thin(method = "zhang_suen")`.
+`zhang_suen` is the default.
 
 `lee` is a 2-D adaptation of Lee's original 3-D algorithm. The 3-D case (volumetric thinning) is not implemented in this release.
 
@@ -84,7 +84,7 @@ The thinning algorithms produce broadly similar skeletons on this V — they all
 
 ## When to use which
 
-- **`zhang_suen`** — the default. Most predictable behavior. Use for general purpose thinning; also available under the `thinImage()` alias.
+- **`zhang_suen`** — the default. Most predictable behavior. Use for general purpose thinning.
 - **`guo_hall`** — try this if your skeletons have lots of diagonal features and Zhang-Suen is breaking them at corners.
 - **`lee`** — when you want directional processing (four sub-iterations per pass, one per cardinal direction). Sometimes produces cleaner skeletons on asymmetric inputs.
 - **`k3m`** — strongest corner preservation in published comparative studies, at the cost of being slower (six phases per outer iteration vs. two for Zhang-Suen).
@@ -126,7 +126,7 @@ The Euclidean implementation uses the linear-time separable algorithm of Felzens
 
 ## Inputs and outputs
 
-`thin()`, `medial_axis()`, and `thinImage()` accept logical, integer, and numeric matrices. Non-zero values are foreground. The return matrix matches the storage mode of the input — logical in, logical out; integer in, integer out; numeric in, numeric out.
+`thin()` and `medial_axis()` accept logical, integer, and numeric matrices. Non-zero values are foreground. The return matrix matches the storage mode of the input — logical in, logical out; integer in, integer out; numeric in, numeric out.
 
 `distance_transform()` always returns a numeric matrix.
 

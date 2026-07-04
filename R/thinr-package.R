@@ -43,8 +43,7 @@
 #' supplies binary morphology (`dilate()`, `erode()`, `distmap()`,
 #' `watershed()`) but no thinning / skeletonization operator. `thinr`
 #' fills that gap with a small, dependency-light, LGPL-3 package (the
-#' same licence as `EBImage`). [thinImage()] is a convenience alias for
-#' the Zhang-Suen default.
+#' same licence as `EBImage`).
 #'
 #' @keywords internal
 #' @useDynLib thinr, .registration = TRUE

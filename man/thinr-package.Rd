@@ -56,8 +56,7 @@ from each foreground pixel to the nearest background pixel.
 supplies binary morphology (\code{dilate()}, \code{erode()}, \code{distmap()},
 \code{watershed()}) but no thinning / skeletonization operator. \code{thinr}
 fills that gap with a small, dependency-light, LGPL-3 package (the
-same licence as \code{EBImage}). \code{\link[=thinImage]{thinImage()}} is a convenience alias for
-the Zhang-Suen default.
+same licence as \code{EBImage}).
 }
 
 \seealso{

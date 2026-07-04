@@ -37,13 +37,11 @@ The dispatcher (`thin()`) selects the C++ implementation by name and handles the
 
 1. **Minimal dependencies.** Rcpp is the only Imports entry. The package is CRAN-targeted and should install cleanly on Linux, macOS, and Windows without system libraries beyond the C++ toolchain.
 
-2. **API stability.** `thin()` and `thinImage()` are the public surface. Any signature change is a major version bump.
+2. **API stability.** `thin()` is the public thinning surface. Any signature change is a major version bump. The default algorithm is locked to Zhang-Suen.
 
-3. **`thinImage()` alias stability.** `thinImage(x)` is a convenience alias for `thin(x, method = "zhang_suen")` and must stay equivalent to it: same shape and storage mode out as in. The default algorithm is locked to Zhang-Suen.
+3. **Stubs error, don't silently fall back.** Lee and K3M throw with a message that names the planned version. Silent fall-backs to Zhang-Suen would hide the limitation.
 
-4. **Stubs error, don't silently fall back.** Lee and K3M throw with a message that names the planned version. Silent fall-backs to Zhang-Suen would hide the limitation.
-
-5. **2-D for now.** Higher-dimensional arrays are explicitly rejected. The Lee implementation in v0.2 introduces 3-D support; the dispatcher will route based on `length(dim(image))`.
+4. **2-D for now.** Higher-dimensional arrays are explicitly rejected. The Lee implementation in v0.2 introduces 3-D support; the dispatcher will route based on `length(dim(image))`.
 
 ## Versioning
 
