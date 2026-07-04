@@ -509,6 +509,62 @@ describe("exact skeletons on small known shapes", {
     expected[3, 3] <- 1L
     expect_identical(thin(img, method = "guo_hall"), expected)
   })
+
+  it("hilditch uses the published look-ahead condition sense at junctions", {
+    # Regression pin for the Hilditch condition-3/4 look-ahead sense.
+    # The published parallel form skips deleting the centre p1 when a
+    # cardinal neighbour p2/p4 has crossing number A == 1 on the CURRENT
+    # image. An earlier implementation compared the look-ahead crossing
+    # number (computed with p1 removed) against 1, which is strictly
+    # stronger and also spared junction neighbours where A(p2) >= 2,
+    # leaving a redundant pixel beside the junction. Here the redundant
+    # pixel is [4, 3]: the corrected condition deletes it, the old one
+    # kept it. Cross-checked exhaustively against a pure-R implementation
+    # of the published form.
+    img <- matrix(c(
+      0, 1, 0, 0, 0, 0,
+      0, 0, 1, 0, 0, 0,
+      1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 0, 1,
+      0, 1, 0, 0, 0, 0,
+      1, 0, 1, 1, 0, 0
+    ), nrow = 6, ncol = 6, byrow = TRUE)
+    expected <- matrix(c(
+      0, 1, 0, 0, 0, 0,
+      0, 0, 1, 0, 0, 0,
+      0, 0, 1, 1, 1, 1,
+      0, 1, 0, 0, 0, 0,
+      0, 1, 0, 0, 0, 0,
+      1, 0, 1, 1, 0, 0
+    ), nrow = 6, ncol = 6, byrow = TRUE)
+    expect_identical(thin(img, method = "hilditch"), expected)
+  })
+})
+
+describe("isolated 2x2 block: method-dependent survival", {
+  # An isolated 2x2 block is a genuine point of divergence between the
+  # parallel algorithms, and it matters for small-blob masks (a marker
+  # remnant, a dotted-line dash). All four of its pixels satisfy the
+  # zhang_suen deletion gate (B == 3, A == 1, both sub-iteration corner
+  # products zero) simultaneously, so zhang_suen -- the default method --
+  # erases the block entirely. guo_hall's sub-iteration m-condition keeps
+  # exactly one pixel. This is documented in vignette("choosing-a-method")
+  # and pinned here as a tripwire: if either count changes, the vignette
+  # guidance is now wrong and must be updated with it.
+  it("zhang_suen (the default) erases an isolated 2x2 block", {
+    img <- matrix(0L, nrow = 6, ncol = 6)
+    img[3:4, 3:4] <- 1L
+    sk <- thin(img, method = "zhang_suen")
+    expect_identical(sum(sk), 0L)
+    expect_identical(sk, matrix(0L, nrow = 6, ncol = 6))
+  })
+
+  it("guo_hall keeps exactly one pixel of an isolated 2x2 block", {
+    img <- matrix(0L, nrow = 6, ncol = 6)
+    img[3:4, 3:4] <- 1L
+    sk <- thin(img, method = "guo_hall")
+    expect_identical(sum(sk), 1L)
+  })
 })
 
 describe("shapes touching the matrix edge are thinned like interior shapes", {
