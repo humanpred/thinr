@@ -15,7 +15,7 @@
 #'
 #' @param image A binary image: a matrix where non-zero values are
 #'   foreground and zero values are background. Logical, integer, and
-#'   numeric inputs are accepted.
+#'   numeric inputs are accepted; `NA` values are not.
 #' @param return_distance Logical. If `FALSE` (default), return only
 #'   the binary skeleton in the same storage mode as `image`. If
 #'   `TRUE`, return a list with elements `skeleton` (the binary

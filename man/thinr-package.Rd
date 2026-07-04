@@ -16,8 +16,7 @@ fast distance transform.
 
 \itemize{
 \item \code{zhang_suen} — Zhang & Suen (1984)
-\doi{10.1145/357994.358023}. Default; matches
-\code{EBImage::thinImage}.
+\doi{10.1145/357994.358023}. Default.
 \item \code{guo_hall} — Guo & Hall (1989) \doi{10.1145/62065.62074}. Often
 better corner preservation on diagonal features.
 \item \code{lee} — Lee, Kashyap & Chu (1994) \doi{10.1006/cgip.1994.1042},
@@ -50,12 +49,14 @@ from each foreground pixel to the nearest background pixel.
 }
 }
 
-\section{Drop-in compatibility}{
+\section{Relationship to EBImage}{
 
 
-\code{\link[=thinImage]{thinImage()}} matches the signature of \code{EBImage::thinImage()}. Code
-that uses \code{EBImage::thinImage} can switch to \code{thinr::thinImage} with
-no other changes.
+\code{EBImage}, the dominant image-processing package in R/Bioconductor,
+supplies binary morphology (\code{dilate()}, \code{erode()}, \code{distmap()},
+\code{watershed()}) but no thinning / skeletonization operator. \code{thinr}
+fills that gap with a small, dependency-light, LGPL-3 package (the
+same licence as \code{EBImage}).
 }
 
 \seealso{

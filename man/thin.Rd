@@ -13,15 +13,18 @@ thin(
 \arguments{
 \item{image}{A binary image: a matrix or array where non-zero values
 are foreground and zero values are background. Logical, integer, and
-numeric inputs are all accepted. The image is treated as a 2-D
-matrix; arrays with more than two dimensions are not yet supported.}
+numeric inputs are all accepted. \code{NA} values are rejected with an
+error rather than silently coerced (a background pixel would change
+the skeleton). The image is treated as a 2-D matrix; arrays with
+more than two dimensions are not yet supported.}
 
-\item{method}{Algorithm to use. One of \code{"zhang_suen"} (default,
-matches \code{EBImage::thinImage}), \code{"guo_hall"}, \code{"lee"} (2-D
-adaptation of Lee, Kashyap & Chu 1994), \code{"k3m"} (Saeed et al.
-2010), \code{"hilditch"} (Hilditch 1969), \code{"opta"} (Naccache &
-Shinghal 1984), or \code{"holt"} (Holt et al. 1987).
-See \code{vignette("choosing-a-method")} for guidance on which to pick.}
+\item{method}{Algorithm to use. One of \code{"zhang_suen"} (default),
+\code{"guo_hall"}, \code{"lee"} (2-D adaptation of Lee, Kashyap & Chu 1994),
+\code{"k3m"} (Saeed et al. 2010), \code{"hilditch"} (Hilditch 1969), \code{"opta"}
+(Naccache & Shinghal 1984), or \code{"holt"} (Holt et al. 1987).
+See \code{vignette("choosing-a-method")} for guidance on which to pick,
+and \code{vignette("correctness-properties")} for the edge-handling and
+connectivity guarantees shared by every method.}
 
 \item{max_iter}{Maximum number of passes. Default 1000. Real binary
 images of typical sizes converge well under 50 passes; the limit is
@@ -36,6 +39,26 @@ background.
 Reduce a binary image to its one-pixel-wide skeleton using one of the
 supported thinning algorithms.
 }
+\section{Edge handling}{
+
+Every kernel inspects an 8-neighbourhood, so a naive implementation
+can never delete a pixel in the outermost row or column and leaves
+shapes that touch the matrix border two or three pixels thick. \code{thin()}
+therefore surrounds the image with a one-pixel background margin before
+thinning and crops it back afterwards, so a shape is skeletonised
+identically whether or not it touches the frame. This applies uniformly
+to all seven methods.
+}
+
+\section{Connectivity}{
+
+Thinning only ever deletes foreground pixels, and each method deletes
+in an order that keeps 8-connected components connected: an object that
+starts as one connected component thins to one connected component. In
+particular a two-pixel-wide stroke thins to a connected one-pixel line
+rather than fragmenting. See \code{vignette("correctness-properties")}.
+}
+
 \examples{
 # A 3x3 solid square thins to a single foreground pixel.
 m <- matrix(c(0, 0, 0, 0, 0,

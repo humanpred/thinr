@@ -9,7 +9,7 @@ medial_axis(image, return_distance = FALSE)
 \arguments{
 \item{image}{A binary image: a matrix where non-zero values are
 foreground and zero values are background. Logical, integer, and
-numeric inputs are accepted.}
+numeric inputs are accepted; \code{NA} values are not.}
 
 \item{return_distance}{Logical. If \code{FALSE} (default), return only
 the binary skeleton in the same storage mode as \code{image}. If

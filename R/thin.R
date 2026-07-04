@@ -5,14 +5,17 @@
 #'
 #' @param image A binary image: a matrix or array where non-zero values
 #'   are foreground and zero values are background. Logical, integer, and
-#'   numeric inputs are all accepted. The image is treated as a 2-D
-#'   matrix; arrays with more than two dimensions are not yet supported.
-#' @param method Algorithm to use. One of `"zhang_suen"` (default,
-#'   matches `EBImage::thinImage`), `"guo_hall"`, `"lee"` (2-D
-#'   adaptation of Lee, Kashyap & Chu 1994), `"k3m"` (Saeed et al.
-#'   2010), `"hilditch"` (Hilditch 1969), `"opta"` (Naccache &
-#'   Shinghal 1984), or `"holt"` (Holt et al. 1987).
-#'   See `vignette("choosing-a-method")` for guidance on which to pick.
+#'   numeric inputs are all accepted. `NA` values are rejected with an
+#'   error rather than silently coerced (a background pixel would change
+#'   the skeleton). The image is treated as a 2-D matrix; arrays with
+#'   more than two dimensions are not yet supported.
+#' @param method Algorithm to use. One of `"zhang_suen"` (default),
+#'   `"guo_hall"`, `"lee"` (2-D adaptation of Lee, Kashyap & Chu 1994),
+#'   `"k3m"` (Saeed et al. 2010), `"hilditch"` (Hilditch 1969), `"opta"`
+#'   (Naccache & Shinghal 1984), or `"holt"` (Holt et al. 1987).
+#'   See `vignette("choosing-a-method")` for guidance on which to pick,
+#'   and `vignette("correctness-properties")` for the edge-handling and
+#'   connectivity guarantees shared by every method.
 #' @param max_iter Maximum number of passes. Default 1000. Real binary
 #'   images of typical sizes converge well under 50 passes; the limit is
 #'   a safety bound against pathological inputs.
@@ -20,6 +23,22 @@
 #' @return A matrix of the same shape and storage mode as `image`, with
 #'   foreground pixels marking the thinned skeleton and the rest set to
 #'   background.
+#'
+#' @section Edge handling:
+#' Every kernel inspects an 8-neighbourhood, so a naive implementation
+#' can never delete a pixel in the outermost row or column and leaves
+#' shapes that touch the matrix border two or three pixels thick. `thin()`
+#' therefore surrounds the image with a one-pixel background margin before
+#' thinning and crops it back afterwards, so a shape is skeletonised
+#' identically whether or not it touches the frame. This applies uniformly
+#' to all seven methods.
+#'
+#' @section Connectivity:
+#' Thinning only ever deletes foreground pixels, and each method deletes
+#' in an order that keeps 8-connected components connected: an object that
+#' starts as one connected component thins to one connected component. In
+#' particular a two-pixel-wide stroke thins to a connected one-pixel line
+#' rather than fragmenting. See `vignette("correctness-properties")`.
 #'
 #' @examples
 #' # A 3x3 solid square thins to a single foreground pixel.
@@ -40,22 +59,38 @@ thin <- function(image,
                  max_iter = 1000L) {
   method <- match.arg(method)
   mat <- as_binary_matrix(image)
+  # The C++ kernels examine an 8-neighbourhood and therefore never
+  # delete pixels in the outermost row/column. Pad with a one-pixel
+  # background border so shapes touching the matrix edge are thinned
+  # like interior shapes, then crop back to the original extent.
+  rows <- seq_len(nrow(mat)) + 1L
+  cols <- seq_len(ncol(mat)) + 1L
+  padded <- matrix(0L, nrow = nrow(mat) + 2L, ncol = ncol(mat) + 2L)
+  padded[rows, cols] <- mat
   iter <- as.integer(max_iter)
   out <- switch(method,
-    zhang_suen = .zhang_suen_cpp(mat, iter),
-    guo_hall   = .guo_hall_cpp(mat,   iter),
-    lee        = .lee_cpp(mat,        iter),
-    k3m        = .k3m_cpp(mat,        iter),
-    hilditch   = .hilditch_cpp(mat,   iter),
-    opta       = .opta_cpp(mat,       iter),
-    holt       = .holt_cpp(mat,       iter)
+    zhang_suen = .zhang_suen_cpp(padded, iter),
+    guo_hall   = .guo_hall_cpp(padded,   iter),
+    lee        = .lee_cpp(padded,        iter),
+    k3m        = .k3m_cpp(padded,        iter),
+    hilditch   = .hilditch_cpp(padded,   iter),
+    opta       = .opta_cpp(padded,       iter),
+    holt       = .holt_cpp(padded,       iter)
   )
+  out <- out[rows, cols, drop = FALSE]
+  dimnames(out) <- dimnames(mat)
   restore_storage(out, image)
 }
 
 # Convert any binary-image-shaped input to an IntegerMatrix where
 # foreground is 1 and background is 0.
 as_binary_matrix <- function(image) {
+  if (anyNA(image)) {
+    # NA_integer_ is INT_MIN in the C++ kernels, where it silently
+    # corrupts neighbour sums far from the NA cell; reject it loudly.
+    stop("thinr does not accept NA values in a binary image. ",
+         "Recode NAs to 0 (background) or 1 (foreground) first.")
+  }
   if (is.matrix(image)) {
     if (is.logical(image)) {
       return(matrix(as.integer(image), nrow = nrow(image), ncol = ncol(image)))
