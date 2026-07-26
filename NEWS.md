@@ -1,4 +1,4 @@
-# thinr (development version)
+# thinr 0.3.0
 
 Correctness fixes from the figureextract ecosystem review (2026-07-03).
 All are boundary conditions the published algorithms assume away; see the

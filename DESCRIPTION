@@ -1,6 +1,6 @@
 Package: thinr
 Title: Binary Image Thinning Algorithms
-Version: 0.2.0
+Version: 0.3.0
 Authors@R:
     person("Bill", "Denney", , "wdenney@humanpredictions.com",
            role = c("aut", "cre"),
