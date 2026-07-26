@@ -9,7 +9,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/humanpred/thinr/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/humanpred/thinr/blob/v0.3.0/DESCRIPTION)
 
 Denney B (2026). *thinr: Binary Image Thinning Algorithms*. R package
 version 0.3.0, <https://github.com/humanpred/thinr>.
