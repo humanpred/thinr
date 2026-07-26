@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">thinr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="thinr-development-version">thinr (development version)<a class="anchor" aria-label="anchor" href="#thinr-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.3.0" id="thinr-030">thinr 0.3.0<a class="anchor" aria-label="anchor" href="#thinr-030"></a></h2>
 <p>Correctness fixes from the figureextract ecosystem review (2026-07-03). All are boundary conditions the published algorithms assume away; see the new <code><a href="../articles/correctness-properties.html">vignette("correctness-properties")</a></code> for the guarantees they restore.</p>
 <ul><li><p><code><a href="../reference/thin.html">thin()</a></code> now skeletonises shapes that touch the matrix border correctly. The kernels inspect an 8-neighbourhood and so never deleted pixels in the outermost row or column, leaving edge-touching shapes two to three pixels thick; <code><a href="../reference/thin.html">thin()</a></code> now pads the image with a one-pixel background margin and crops it back, so a shape thins identically whether or not it touches the frame. Applies to all seven methods (#F012).</p></li>
 <li><p><code>thin(method = "opta")</code> now keeps two-pixel-wide strokes connected. The SPTA kernel evaluated all four contour directions against the pre-cycle snapshot and deleted them in one batch, so both sides of a 2px stroke were removed together and the skeleton fragmented (a 2×9 bar collapsed to its four corner pixels). Deletion is now sequential per direction, as Naccache &amp; Shinghal’s two-scan formulation requires (#F011).</p></li>
@@ -58,7 +58,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
