@@ -1,3 +1,19 @@
+# thinr 0.3.0.9000 (development version)
+
+* Development version bump following the 0.3.0 CRAN release.
+
+* Internal, with no change to any output: the Zhang-Suen crossing number
+  `A(p)` and neighbour count `B(p)` were re-implemented inline in
+  `src/zhang_suen.cpp`, `src/lee.cpp`, and `src/holt.cpp` instead of calling
+  the shared `thinr::crossing_number()` / `thinr::neighbour_count()` in
+  `src/thinr_common.h`, which only `src/hilditch.cpp` used. A future
+  correctness fix to the shared definition would have reached one of the four
+  kernels that need it and silently missed the other three. All four now call
+  the shared helpers. The replacement expressions are token-identical to the
+  inline copies they replace; identical output was verified empirically across
+  257 binary images (degenerate, boundary, synthetic, and real chart masks)
+  for all seven methods (#F018).
+
 # thinr 0.3.0
 
 Correctness fixes from the figureextract ecosystem review (2026-07-03).
