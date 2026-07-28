@@ -44,6 +44,10 @@
 C++ sources in `src/`:
 
 - `thinr_common.h` — shared inline helpers (`crossing_number`, `neighbour_count`, `is_border_4`).
+  `is_border_4` has **no caller today** and is retained deliberately as part of
+  the shared 8-neighbour vocabulary a new kernel would be written against (its
+  last callers, `stentiford` / `pavlidis`, were dropped 2026-05-20). See the
+  comment on its definition; do not "clean it up" without reading that first.
 - `zhang_suen.cpp` — Zhang & Suen (1984).
 - `guo_hall.cpp` — Guo & Hall (1989).
 - `lee.cpp` — Lee, Kashyap & Chu (1994), 2-D adaptation.

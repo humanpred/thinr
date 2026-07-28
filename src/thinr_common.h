@@ -30,7 +30,21 @@ inline int neighbour_count(int p2, int p3, int p4, int p5,
 }
 
 // 4-connected background test: TRUE iff at least one 4-connected
-// neighbour is background. Used to identify border pixels.
+// neighbour is background. Identifies border pixels.
+//
+// NO CALLER TODAY -- retained deliberately, not orphaned. Every kernel
+// currently in src/ tests deletability through crossing_number() /
+// neighbour_count() instead; this predicate was last used by the
+// `stentiford` and `pavlidis` kernels, dropped 2026-05-20. It is kept
+// because it is part of this header's reason to exist -- the shared
+// 8-neighbour vocabulary a NEW thinning kernel is written against --
+// and an uncalled `inline` emits no code, so it costs nothing at
+// runtime or in binary size.
+//
+// The 2026-07-28 review left "delete it or state that it is deliberate"
+// open as a judgement call; this comment is that decision. If a future
+// reader finds this helper still callerless and the header's shared-
+// vocabulary role no longer holds, deleting it is safe and expected.
 inline bool is_border_4(int p2, int p4, int p6, int p8) {
   return (p2 == 0) || (p4 == 0) || (p6 == 0) || (p8 == 0);
 }
