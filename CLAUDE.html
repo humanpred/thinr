@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">thinr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,7 +30,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>CLAUDE.md — thinr</h1>
-      <small class="dont-index">Source: <a href="https://github.com/humanpred/thinr/blob/v0.3.0/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/humanpred/thinr/blob/main/CLAUDE.md" class="external-link"><code>CLAUDE.md</code></a></small>
     </div>
 
 <div id="claudemd--thinr" class="section level1">
@@ -47,12 +47,16 @@
 <ul><li>
 <strong>Slice:</strong> 0 — Infrastructure</li>
 <li>
-<strong>Version:</strong> 0.2.0</li>
+<strong>Version:</strong> 0.3.0.9000 (as of 2026-07-28, from <code>DESCRIPTION</code>) — a development version on top of the published CRAN release 0.3.0. The <code>.9000</code> suffix was added <em>because</em> 0.3.0 is live on CRAN: before the bump, a local <code>rcmdcheck(args = "--as-cran")</code> reported “Insufficient package version (submitted: 0.3.0, existing: 0.3.0)” from the live CRAN incoming-feasibility check — correct behaviour for a repeat submission of a published version, but a confusing WARNING for anyone checking locally. Bump the version again (to <code>0.4.0</code> or <code>0.3.1</code>) at the next CRAN submission.</li>
 <li>
-<strong>Status:</strong> CRAN-prep release. Seven thinning algorithms fully implemented in Rcpp, all verified against original papers (or the Lam-Lee-Suen 1992 survey for Hilditch’s parallel form). Medial axis and distance transform shipped as standalone exported utilities. PR #1 (<code>release-prep</code>) and PR #2 (<code>coverage-bump</code>) both merged to <code>main</code>. Tests pass; lintr clean; R CMD check –as-cran clean (0/0/2 NOTEs, both expected). GitHub Actions: R-CMD-check (matrix), pkgdown, test-coverage, lint, pr-commands.</li>
+<strong>Status:</strong> Published CRAN release (0.3.0) plus unreleased development work. Seven thinning algorithms fully implemented in Rcpp (as of 2026-07-28: <code>zhang_suen</code>, <code>guo_hall</code>, <code>lee</code>, <code>k3m</code>, <code>hilditch</code>, <code>opta</code>, <code>holt</code> — the <code>tests/testthat/test-thin.R</code> <code>methods</code> vector), all verified against original papers (or the Lam-Lee-Suen 1992 survey for Hilditch’s parallel form). Medial axis and distance transform shipped as standalone exported utilities. Tests pass (510 assertions, <code>devtools::test()</code>); lintr clean. GitHub Actions: R-CMD-check (matrix), pkgdown, test-coverage, lint, pr-commands.</li>
 <li>
 <strong>Recent shipments:</strong>
 <ul><li>
+<strong>thinr 0.3.0.9000 — F018 kernel de-duplication</strong> (2026-07-28) — <code>src/zhang_suen.cpp</code>, <code>src/lee.cpp</code>, and <code>src/holt.cpp</code> now <code>#include "thinr_common.h"</code> and call <code>thinr::crossing_number()</code> / <code>thinr::neighbour_count()</code> instead of re-implementing them inline, joining <code>src/hilditch.cpp</code>. <strong>The de-duplication is the gate</strong>: before it, mutating the shared definition in <code>thinr_common.h</code> changed only <code>hilditch</code>’s output; after it, the same mutation reaches <code>zhang_suen</code>, <code>lee</code>, <code>holt</code>, and <code>hilditch</code> — so a future correctness fix to the shared helpers can no longer silently miss three of the four kernels that need it. Behaviour-identical, proven rather than argued: the pre- and post-change builds were installed into separate libraries and compared over 257 binary images × 7 methods × 5 <code>max_iter</code> values × {<code><a href="reference/thin.html">thin()</a></code>, raw kernel} plus <code><a href="reference/medial_axis.html">medial_axis()</a></code> and all 3 <code><a href="reference/distance_transform.html">distance_transform()</a></code> metrics — 19,172 result slots, all <code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code>, same serialisation MD5. <code>guo_hall.cpp</code> and <code>k3m.cpp</code> are deliberately <strong>not</strong> included: they implement different connectivity criteria (Guo-Hall’s <code>C(p)</code>/<code>N1</code>/<code>N2</code>, K3M’s lookup-table weights), not the Zhang-Suen crossing number.</li>
+<li>
+<strong>thinr 0.3.0 — 2026-07-03 ecosystem review fix wave</strong> (as of 2026-07-28; see <code>NEWS.md</code> and <code>REVIEW-2026-07-28.md</code> for detail) — F012 (edge/border pixels now thinned via zero-pad-then-crop, all 7 methods), F011 (OPTA no longer disconnects a 2px-thick stroke via sequential per-direction sub-iterations), F015 (<code><a href="reference/distance_transform.html">distance_transform()</a></code> returns <code>Inf</code>, not a finite sentinel, on an all-foreground image, for <code>manhattan</code>/<code>chessboard</code> matching <code>euclidean</code>), F016 (<code>NA</code> rejected with a clear error at the <code>as_binary_matrix()</code> coercion boundary instead of silently becoming <code>INT_MIN</code>), F014 (Hilditch look-ahead junction condition corrected to the published parallel form), F013 (added a connectivity-preservation property test across all 7 methods), F017 (documented + pinned the isolated-2x2-block method-dependent survival), and <strong>removed <code>thinImage()</code> entirely</strong> (it had described itself as an <code>EBImage::thinImage()</code>-equivalent, a function that has never existed in <code>EBImage</code>; <code><a href="reference/thin.html">thin()</a></code> is now the sole entry point) <!-- audit-ok:upstream-api -->. F018 (<code>zhang_suen.cpp</code>/<code>lee.cpp</code>/<code>holt.cpp</code> duplicating the shared <code>thinr::crossing_number()</code>/<code>neighbour_count()</code>) was confirmed still present by the 2026-07-28 review and deliberately held back from that documentation branch; it shipped separately as 0.3.0.9000 — see the entry above and <code>REVIEW-2026-07-28.md</code>.</li>
+<li>
 <strong>R-side coverage to its practical maximum</strong> (2026-05-21, PR #2, <code>1870e25</code>) — added tests covering the remaining branches in the <code><a href="reference/thin.html">thin()</a></code> dispatcher and the storage-restoration helpers.</li>
 <li>
 <strong>release-prep merged</strong> (2026-05-20, PR #1, <code>98f4a80</code>) — the CRAN-prep branch (with all reviewer-feedback fixes, the K3M / OPTA / Holt verifications, the Stentiford / Pavlidis drop, and pkgdown reference-index fix) landed on <code>main</code>.</li>
@@ -82,11 +86,13 @@
 <ul><li>
 <strong>Framework:</strong> <code>testthat</code> 3rd edition with the <code>describe</code>/<code>it</code> BDD style (legible test reports for a public package).</li>
 <li>
-<strong>Coverage:</strong> every algorithm in <code>methods &lt;- c(...)</code> (currently nine) is exercised against the same property suite (solid square thins, line collapse, idempotence, empty input, isolated-pixel preservation, ring topology). New methods are added to the vector and inherit all tests automatically.</li>
+<strong>Coverage:</strong> every algorithm in <code>methods &lt;- c(...)</code> (currently seven, as of 2026-07-28, from <code>tests/testthat/test-thin.R</code> — <code>stentiford</code>/<code>pavlidis</code> were dropped 2026-05-20, see below) is exercised against the same property suite (solid square thins, line collapse, idempotence, empty input, isolated-pixel preservation, ring topology, connectivity-preservation, edge-handling). New methods are added to the vector and inherit all tests automatically.</li>
 <li>
 <strong><code>distance_transform</code> and <code>medial_axis</code></strong> each have their own test files (<code>tests/testthat/test-distance-transform.R</code>, <code>test-medial-axis.R</code>).</li>
 <li>
-<strong>Acceptance:</strong> <code>R CMD check --as-cran</code> clean (0 errors, 0 warnings, NOTEs acceptable for “new submission” and the Ubuntu system compilation-flags note).</li>
+<strong>Acceptance:</strong> <code>rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning")</code> locally reports 0 errors and 0 warnings (verified 2026-07-28 on <code>0.3.0.9000</code>). Two NOTEs are expected and acceptable: the Ubuntu system compilation-flags note (<code>-mno-omit-leaf-frame-pointer</code>, from the R installation, not from this package) and CRAN incoming feasibility’s “Version contains large components” for the <code>.9000</code> development suffix. A <code>Non-standard file/directory found at top level</code> NOTE means a new root-level doc needs a <code>.Rbuildignore</code> entry — add it rather than accepting the NOTE. The GitHub Actions <code>R-CMD-check.yaml</code> gate is the authoritative signal and is green on <code>main</code>.</li>
+<li>
+<strong>Checking from a <code>git worktree</code>:</strong> <code>R CMD build</code> excludes a <code>.git</code> <em>directory</em> but not the <code>.git</code> <em>file</em> a worktree uses, so <code>--as-cran</code> used to emit a spurious “hidden files and directories: .git” NOTE from a worktree that a normal clone never showed. <code>.Rbuildignore</code> now carries <code>^\.git$</code> so worktree checks match clone checks.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="module-boundaries">Module boundaries<a class="anchor" aria-label="anchor" href="#module-boundaries"></a></h2>
