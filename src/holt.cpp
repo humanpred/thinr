@@ -33,7 +33,6 @@
 // background.
 
 #include <Rcpp.h>
-#include "thinr_common.h"
 using namespace Rcpp;
 
 namespace {
@@ -54,10 +53,13 @@ inline bool holt_edge(const IntegerMatrix& m, int r, int c,
   int p8 = (c > 0)                          ? m(r,     c - 1) : 0;  // W
   int p9 = (r > 0 && c > 0)                 ? m(r - 1, c - 1) : 0;  // NW
 
-  int B = thinr::neighbour_count(p2, p3, p4, p5, p6, p7, p8, p9);
+  int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
   if (B < 2 || B > 6) return false;
 
-  int A = thinr::crossing_number(p2, p3, p4, p5, p6, p7, p8, p9);
+  int A = (p2 == 0 && p3 == 1) + (p3 == 0 && p4 == 1)
+        + (p4 == 0 && p5 == 1) + (p5 == 0 && p6 == 1)
+        + (p6 == 0 && p7 == 1) + (p7 == 0 && p8 == 1)
+        + (p8 == 0 && p9 == 1) + (p9 == 0 && p2 == 1);
   return A == 1;
 }
 

@@ -3,7 +3,6 @@
 // from the N-W and S-E quadrants, the other from N-E and S-W.
 
 #include <Rcpp.h>
-#include "thinr_common.h"
 using namespace Rcpp;
 
 // Neighbour layout, P2 = north, going clockwise:
@@ -13,11 +12,14 @@ using namespace Rcpp;
 static inline int zs_can_delete(int p2, int p3, int p4, int p5,
                                 int p6, int p7, int p8, int p9, int sub) {
   // B(P1): non-zero neighbour count.
-  int B = thinr::neighbour_count(p2, p3, p4, p5, p6, p7, p8, p9);
+  int B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
   if (B < 2 || B > 6) return 0;
 
   // A(P1): 0->1 transitions in the cyclic sequence P2,P3,...,P9,P2.
-  int A = thinr::crossing_number(p2, p3, p4, p5, p6, p7, p8, p9);
+  int A = (p2 == 0 && p3 == 1) + (p3 == 0 && p4 == 1)
+        + (p4 == 0 && p5 == 1) + (p5 == 0 && p6 == 1)
+        + (p6 == 0 && p7 == 1) + (p7 == 0 && p8 == 1)
+        + (p8 == 0 && p9 == 1) + (p9 == 0 && p2 == 1);
   if (A != 1) return 0;
 
   if (sub == 0) {
