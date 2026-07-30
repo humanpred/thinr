@@ -2,6 +2,12 @@
 
 * Development version bump following the 0.3.0 CRAN release.
 
+* Internal, with no change to any output: the unused `thinr::is_border_4()`
+  helper was removed from `src/thinr_common.h`. Its last callers were the
+  stentiford and pavlidis kernels, dropped 2026-05-20; nothing has referenced
+  it since. The header now declares only the two helpers that are actually
+  used.
+
 * Internal, with no change to any output: the Zhang-Suen crossing number
   `A(p)` and neighbour count `B(p)` were re-implemented inline in
   `src/zhang_suen.cpp`, `src/lee.cpp`, and `src/holt.cpp` instead of calling
