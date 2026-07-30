@@ -29,12 +29,6 @@ inline int neighbour_count(int p2, int p3, int p4, int p5,
   return p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
 }
 
-// 4-connected background test: TRUE iff at least one 4-connected
-// neighbour is background. Used to identify border pixels.
-inline bool is_border_4(int p2, int p4, int p6, int p8) {
-  return (p2 == 0) || (p4 == 0) || (p6 == 0) || (p8 == 0);
-}
-
 }  // namespace thinr
 
 #endif  // THINR_COMMON_H

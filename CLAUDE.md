@@ -43,7 +43,7 @@
 
 C++ sources in `src/`:
 
-- `thinr_common.h` — shared inline helpers (`crossing_number`, `neighbour_count`, `is_border_4`).
+- `thinr_common.h` — shared inline helpers (`crossing_number`, `neighbour_count`).
 - `zhang_suen.cpp` — Zhang & Suen (1984).
 - `guo_hall.cpp` — Guo & Hall (1989).
 - `lee.cpp` — Lee, Kashyap & Chu (1994), 2-D adaptation.
