@@ -4,6 +4,8 @@
 
 - Development version bump following the 0.3.0 CRAN release.
 
+&nbsp;
+
 - Internal, with no change to any output: the unused
   `thinr::is_border_4()` helper was removed from `src/thinr_common.h`.
   Its last callers were the stentiford and pavlidis kernels, dropped
